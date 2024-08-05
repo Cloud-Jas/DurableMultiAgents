@@ -22,7 +22,10 @@ var host = new HostBuilder()
         services.ConfigureFunctionsApplicationInsights();
         services.AddLogging();
 
-        string accountEndpoint = Environment.GetEnvironmentVariable("CosmosDBAccountEndpoint");
+        string cosmosdbAccountEndpoint = Environment.GetEnvironmentVariable("CosmosDBAccountEndpoint");
+        string openaiEndpoint = Environment.GetEnvironmentVariable("OpenAIEndpoint");
+        string openaiChatCompletionDeploymentName = Environment.GetEnvironmentVariable("OpenAIChatCompletionDeploymentName");
+        string openaiTextEmbeddingGenerationDeploymentName = Environment.GetEnvironmentVariable("OpenAITextEmbeddingGenerationDeploymentName");
 
         services.AddSingleton(s =>
         {
@@ -31,7 +34,7 @@ var host = new HostBuilder()
                 ConnectionMode = ConnectionMode.Direct
             };
 
-            return new CosmosClient(accountEndpoint, new DefaultAzureCredential(new DefaultAzureCredentialOptions
+            return new CosmosClient(cosmosdbAccountEndpoint, new DefaultAzureCredential(new DefaultAzureCredentialOptions
             {
                 TenantId = Environment.GetEnvironmentVariable("TenantId")
             }), options);
@@ -40,19 +43,19 @@ var host = new HostBuilder()
         services.AddSingleton<AzureOpenAIChatCompletionService>(provider =>
         {
             return new AzureOpenAIChatCompletionService(
-                deploymentName: "gpt4",
+                deploymentName: openaiChatCompletionDeploymentName,
                 credentials: new DefaultAzureCredential(new DefaultAzureCredentialOptions
                 {
                     TenantId = Environment.GetEnvironmentVariable("TenantId")
                 }),
-                endpoint: "https://azopenaigpt4turbo.openai.azure.com"
+                endpoint: openaiEndpoint
             );
         });
 
         services.AddSingleton<AzureOpenAITextEmbeddingGenerationService>(provider =>
         {
-            return new AzureOpenAITextEmbeddingGenerationService(deploymentName: "embedding4",
-                endpoint: "https://azopenaigpt4turbo.openai.azure.com",
+            return new AzureOpenAITextEmbeddingGenerationService(deploymentName: openaiTextEmbeddingGenerationDeploymentName,
+                endpoint: openaiEndpoint,
                 credential: new DefaultAzureCredential(new DefaultAzureCredentialOptions
                 {
                     TenantId = Environment.GetEnvironmentVariable("TenantId")

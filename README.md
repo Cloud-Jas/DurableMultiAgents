@@ -38,7 +38,10 @@ Update the `local.settings.json` with the below details
     "cosmosDB__clientSecret": "Your_ClientSecret_Here",
     "cosmosDB__tenantId": "Your_TenantId_Here",
     "cosmosDB__clientId": "Your_ClientId_Here",
-    "cosmosDB__accountEndpoint": "Your_CosmosDBAccountEndpoint_Here"
+    "cosmosDB__accountEndpoint": "Your_CosmosDBAccountEndpoint_Here",
+    "OpenAIEndpoint": "Your_OpenAI_Endpoint",
+    "OpenAIChatCompletionDeploymentName": "Your_OpenAI_ChatCompletion_Deployment_Name",
+    "OpenAITextEmbeddingGenerationDeploymentName": "Your_OpenAI_TextEmbedding_Deployment_Name"
   }
 }
 ```
@@ -48,6 +51,7 @@ Update the `local.settings.json` with the below details
 - To get the `SubscriptionId`, `ResourceGroup`, `DatabaseAccount`, `DatabaseId`, `TenantId`, you need to get the details from Azure Portal
 - To get the `PostmarkServerToken` and `FromMailAddress` you need to create an account in Postmark and get the token from there. FromMailAddress should be based on the domain you have registered in Postmark
 - To get the `cosmosDB__clientSecret`, `cosmosDB__tenantId`, `cosmosDB__clientId`, `cosmosDB__accountEndpoint` you need to create an Azure AD application and assign it with built-in Cosmos DB Data contributor role.
+- To get the `OpenAIEndpoint`, `OpenAIChatCompletionDeploymentName`, `OpenAITextEmbeddingGenerationDeploymentName` you need to create an Azure OpenAI service and create deployments for Chat Completion and Text Embedding Generation
 - Once you have all the details updated in the `local.settings.json` you can run the project
 
 # Steps to assign managed identity to Azure OpenAI Services
