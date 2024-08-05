@@ -67,7 +67,7 @@ Update the `local.settings.json` with the below details
 	```bash
 	az cosmosdb sql role assignment create --resource-group $resourceGroupName --account-name $cosmosName --role-definition-id "00000000-0000-0000-0000-000000000002" --principal-id "<your-principal-id>" --scope "/"
 	```
-- Replace the `principal-id` with the managed identity id you have created for the Azure Functions or the logged in user if running locally.
+- Replace the `principal-id` with the managed identity id you have created for the Azure Functions or the Azure AD application's ObjectId if running locally.
 
 # Data Flow
 
