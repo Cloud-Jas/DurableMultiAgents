@@ -15,9 +15,60 @@ Durable Multi Agents is an attempt to make use of Azure Durable Functions with S
 - Managed Idenitty connectivity to Azure OpenAI and Azure Cosmos DB services
 - Provided seed data project for you to get started
 
+# Steps to run the project
+
+Update the `local.settings.json` with the below details
+	```json
+	{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "Your_InstrumentationKey_Here",
+    "APPINSIGHTS_CONNECTION_STRING": "Your_ConnectionString_Here",
+    "CosmosDBAccountEndpoint": "Your_CosmosDBAccountEndpoint_Here",
+    "SubscriptionId": "Your_SubscriptionId_Here",
+    "ResourceGroup": "Your_ResourceGroup_Here",
+    "DatabaseAccount": "Your_DatabaseAccount_Here",
+    "DatabaseId": "Your_DatabaseId_Here",
+    "TenantId": "Your_TenantId_Here",
+    "PostmarkServerToken": "Your_PostmarkServerToken_Here",
+    "FromMailAddress": "Your_FromMailAddress_Here",    
+    "cosmosDB__clientSecret": "Your_ClientSecret_Here",
+    "cosmosDB__tenantId": "Your_TenantId_Here",
+    "cosmosDB__clientId": "Your_ClientId_Here",
+    "cosmosDB__accountEndpoint": "Your_CosmosDBAccountEndpoint_Here"
+  }
+}
+	```
+
+- To get the `APPINSIGHTS_INSTRUMENTATIONKEY` and `APPINSIGHTS_CONNECTION_STRING` you need to create an Application Insights in Azure and get the key from there
+- To get the `CosmosDBAccountEndpoint` you need to create an Azure Cosmos DB account and get the endpoint from there
+- To get the `SubscriptionId`, `ResourceGroup`, `DatabaseAccount`, `DatabaseId`, `TenantId`, you need to get the details from Azure Portal
+- To get the `PostmarkServerToken` and `FromMailAddress` you need to create an account in Postmark and get the token from there. FromMailAddress should be based on the domain you have registered in Postmark
+- To get the `cosmosDB__clientSecret`, `cosmosDB__tenantId`, `cosmosDB__clientId`, `cosmosDB__accountEndpoint` you need to create an Azure AD application and assign it with built-in Cosmos DB Data contributor role.
+- Once you have all the details updated in the `local.settings.json` you can run the project
+
+# Steps to assign managed identity to Azure OpenAI Services
+
+- Go to Azure Portal
+- Search for Azure OpenAI Services
+- Select Access Control (IAM)
+- Click on Add Role Assignment
+- Select the role as Cognitive Services OpenAI Contributor
+- Select the managed identity you have created for the Azure Functions, if running locally make sure the logged in user has the required permissions
+
+# Steps to assign managed identity to Azure Cosmos DB
+
+- Go to Azure Portal
+- Open Azure Cloud Shell
+- Run the below command to get the managed identity id
+	```bash
+	az cosmosdb sql role assignment create --resource-group $resourceGroupName --account-name $cosmosName --role-definition-id "00000000-0000-0000-0000-000000000002" --principal-id "<your-principal-id>" --scope "/"
+	```
+- Replace the `principal-id` with the managed identity id you have created for the Azure Functions or the logged in user if running locally.
 
 # Data Flow
-
 
 ## Travel based query
 

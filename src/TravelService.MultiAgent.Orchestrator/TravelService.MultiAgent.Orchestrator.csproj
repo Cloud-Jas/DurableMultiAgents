@@ -7,6 +7,9 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Content Include="local.settings.json" />
+	</ItemGroup>
+	<ItemGroup>
 		<None Update="Agents\Booking\BookingAgent.Prompty">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
