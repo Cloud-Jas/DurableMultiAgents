@@ -4,20 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TravelService.MultiAgent.Orchestrator.Abstractions;
 
 namespace TravelService.MultiAgent.Orchestrator.Helper
 {
     public static class Utility
-    {
-        public static KernelPlugin GetPlugin<T>() where T : DiagnosticPlugin, new()
-        {
-            var tool = new T();
-
-            var plugin = KernelPluginFactory.CreateFromObject(tool);
-
-            return plugin;
-        }
+    {       
         public static Array GetOrchestrators()
         {
             var orchestrators = new[] {
