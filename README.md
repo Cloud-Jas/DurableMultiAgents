@@ -18,8 +18,9 @@ Durable Multi Agents is an attempt to make use of Azure Durable Functions with S
 # Steps to run the project
 
 Update the `local.settings.json` with the below details
-	```json
-	{
+
+```json
+{
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
@@ -40,7 +41,7 @@ Update the `local.settings.json` with the below details
     "cosmosDB__accountEndpoint": "Your_CosmosDBAccountEndpoint_Here"
   }
 }
-	```
+```
 
 - To get the `APPINSIGHTS_INSTRUMENTATIONKEY` and `APPINSIGHTS_CONNECTION_STRING` you need to create an Application Insights in Azure and get the key from there
 - To get the `CosmosDBAccountEndpoint` you need to create an Azure Cosmos DB account and get the endpoint from there
