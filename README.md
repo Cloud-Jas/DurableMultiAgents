@@ -67,7 +67,7 @@ Update the `local.settings.json` with the below details
 
 - Go to Azure Portal
 - Open Azure Cloud Shell
-- Run the below command to get the managed identity id
+- Run the below command to assign Cosmos DB data Contributor role
 	```bash
 	az cosmosdb sql role assignment create --resource-group $resourceGroupName --account-name $cosmosName --role-definition-id "00000000-0000-0000-0000-000000000002" --principal-id "<your-principal-id>" --scope "/"
 	```
