@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: DurableMultiAgents
+metadata:
+    template: azd-init@1.5.0
+services:
+    TravelService.MultiAgent.Orchestrator:
+        project: src\TravelService.MultiAgent.Orchestrator
+        host: function
+        language: dotnet  
+hooks:
+  postprovision:    
+    shell: pwsh
+    run: |
+      # Fetch environment variable values using azd env get-values
+      $envVars = azd env get-values --output json | ConvertFrom-Json
+      # Extract individual environment variables
+      $cosmosDBAccountName = $envVars.COSMOSDB_ACCOUNT_NAME
+      $resourceGroupName = $envVars.RESOURCE_GROUP_NAME      
+      ./scripts/seedData.ps1 -cosmosDBAccountName $cosmosDBAccountName -resourceGroupName $resourceGroupName
+    continueOnError: false
+    interactive: false

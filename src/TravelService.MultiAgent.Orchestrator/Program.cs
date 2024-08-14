@@ -26,7 +26,16 @@ var host = new HostBuilder()
         string openaiEndpoint = Environment.GetEnvironmentVariable("OpenAIEndpoint");
         string openaiChatCompletionDeploymentName = Environment.GetEnvironmentVariable("OpenAIChatCompletionDeploymentName");
         string openaiTextEmbeddingGenerationDeploymentName = Environment.GetEnvironmentVariable("OpenAITextEmbeddingGenerationDeploymentName");
+        var userAssignedIdentityClientId = Environment.GetEnvironmentVariable("UserAssignedIdentity");
 
+        var credentialOptions = new DefaultAzureCredentialOptions
+        {
+            TenantId = Environment.GetEnvironmentVariable("TenantId")
+        };
+        if (!string.IsNullOrEmpty(userAssignedIdentityClientId))
+        {            
+            credentialOptions.ManagedIdentityClientId = userAssignedIdentityClientId;
+        }
         services.AddSingleton(s =>
         {
             CosmosClientOptions options = new CosmosClientOptions()
@@ -34,20 +43,14 @@ var host = new HostBuilder()
                 ConnectionMode = ConnectionMode.Direct
             };
 
-            return new CosmosClient(cosmosdbAccountEndpoint, new DefaultAzureCredential(new DefaultAzureCredentialOptions
-            {
-                TenantId = Environment.GetEnvironmentVariable("TenantId")
-            }), options);
+            return new CosmosClient(cosmosdbAccountEndpoint, new DefaultAzureCredential(credentialOptions), options);
         });
 
         services.AddSingleton<AzureOpenAIChatCompletionService>(provider =>
         {
             return new AzureOpenAIChatCompletionService(
                 deploymentName: openaiChatCompletionDeploymentName,
-                credentials: new DefaultAzureCredential(new DefaultAzureCredentialOptions
-                {
-                    TenantId = Environment.GetEnvironmentVariable("TenantId")
-                }),
+                credentials: new DefaultAzureCredential(credentialOptions),
                 endpoint: openaiEndpoint
             );
         });
@@ -56,10 +59,7 @@ var host = new HostBuilder()
         {
             return new AzureOpenAITextEmbeddingGenerationService(deploymentName: openaiTextEmbeddingGenerationDeploymentName,
                 endpoint: openaiEndpoint,
-                credential: new DefaultAzureCredential(new DefaultAzureCredentialOptions
-                {
-                    TenantId = Environment.GetEnvironmentVariable("TenantId")
-                }));
+                credential: new DefaultAzureCredential(credentialOptions));
         });
 
         services.AddSingleton<SendGridClient>(provider =>

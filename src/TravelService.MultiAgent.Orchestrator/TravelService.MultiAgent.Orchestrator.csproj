@@ -5,7 +5,8 @@
 		<OutputType>Exe</OutputType>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-	</PropertyGroup>
+	  <UserSecretsId>88ce9ac2-d488-4788-bc5b-5056d666c36d</UserSecretsId>
+  </PropertyGroup>
 	<ItemGroup>
 	  <Content Include="local.settings.json" />
 	</ItemGroup>

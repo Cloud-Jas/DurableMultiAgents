@@ -15,7 +15,17 @@ Durable Multi Agents is an attempt to make use of Azure Durable Functions with S
 - Managed Idenitty connectivity to Azure OpenAI and Azure Cosmos DB services
 - Provided seed data project for you to get started
 
-# Steps to run the project
+# Deploy to Azure
+
+The easiest way to deploy this app is using the [Azure Developer CLI](https://aka.ms/azd).
+
+To provision and deploy:
+1) Open a new terminal and do the following from root folder:
+```bash
+azd up
+```
+
+# Steps to run the project locally
 
 Update the `local.settings.json` with the below details
 

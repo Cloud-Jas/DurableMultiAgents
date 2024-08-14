@@ -28,6 +28,8 @@ namespace TravelService.MultiAgent.Orchestrator.Services
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly string FetchDetailsEndpoint;
+        private readonly string userAssignedIdentityClientId;
+        private readonly DefaultAzureCredentialOptions defaultAzureCredentialOptions;
         public NL2SQLService(IConfiguration configuration, HttpClient httpClient)
         {
             tenantId = configuration["TenantId"];
@@ -36,18 +38,27 @@ namespace TravelService.MultiAgent.Orchestrator.Services
             databaseId = configuration["DatabaseId"];
             databaseAccount = configuration["DatabaseAccount"];
             containerId = configuration["ContainerId"];
+            userAssignedIdentityClientId = configuration["UserAssignedIdentity"];
             _httpClient = httpClient;
             FetchDetailsEndpoint = $"https://tools.cosmos.azure.com/api/controlplane/toolscontainer/cosmosaccounts/subscriptions/{subscriptionId}/resourceGroups/{resourceGroup}/providers/Microsoft.DocumentDB/databaseAccounts/{databaseAccount}/containerconnections/multicontainer";
+            defaultAzureCredentialOptions = new DefaultAzureCredentialOptions
+            {
+                TenantId = tenantId
+            };
+            if (!string.IsNullOrEmpty(userAssignedIdentityClientId))
+            {
+                defaultAzureCredentialOptions.ManagedIdentityClientId = userAssignedIdentityClientId;
+            }
         }
 
-        public async Task<string> GetSQLQueryAsync(string userPrompt,string semanticLayer)
+        public async Task<string> GetSQLQueryAsync(string userPrompt, string semanticLayer)
         {
-            var credentials = new DefaultAzureCredential();
+            var credentials = new DefaultAzureCredential(defaultAzureCredentialOptions);
 
             var tokenResult = await credentials.GetTokenAsync(new TokenRequestContext(new[] { "https://management.azure.com/.default" }, tenantId: tenantId), CancellationToken.None);
 
-            var (forwardingId, url, token) = await FetchDetailsAsync(tokenResult.Token,semanticLayer);
-            
+            var (forwardingId, url, token) = await FetchDetailsAsync(tokenResult.Token, semanticLayer);
+
             return await GenerateSQLQueryAsync(userPrompt, url, token);
         }
         private async Task<(string forwardingId, string url, string token)> FetchDetailsAsync(string bearerToken, string semanticLayer)
@@ -59,11 +70,11 @@ namespace TravelService.MultiAgent.Orchestrator.Services
                 containerId = semanticLayer,
                 mode = "User"
             };
-            var jsonContent = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");                        
+            var jsonContent = new StringContent(JsonConvert.SerializeObject(requestData), Encoding.UTF8, "application/json");
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Add("Accept", "*/*");
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));            
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {bearerToken}");           
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {bearerToken}");
 
             var response = await _httpClient.PostAsync(FetchDetailsEndpoint, jsonContent);
 
@@ -96,13 +107,13 @@ namespace TravelService.MultiAgent.Orchestrator.Services
             using (var httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                httpClient.DefaultRequestHeaders.Add("authorization", $"token {token}");                
+                httpClient.DefaultRequestHeaders.Add("authorization", $"token {token}");
 
-                var response = await httpClient.PostAsync(url+ "public/generateSQLQuery", jsonContent);
+                var response = await httpClient.PostAsync(url + "public/generateSQLQuery", jsonContent);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var sqlResponse =  await response.Content.ReadAsStringAsync();
+                    var sqlResponse = await response.Content.ReadAsStringAsync();
                     var sqlResponseObj = JsonConvert.DeserializeObject<NL2SQLResponse>(sqlResponse);
                     return sqlResponseObj.Sql;
                 }

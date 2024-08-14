@@ -1,0 +1,385 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0/win-x64",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {},
+    ".NETCoreApp,Version=v6.0/win-x64": {
+      "Cosmos.DataTransfer.JsonExtension/2.1.5": {
+        "dependencies": {
+          "Cosmos.DataTransfer.AwsS3Storage": "2.1.5",
+          "Cosmos.DataTransfer.AzureBlobStorage": "2.1.5",
+          "Cosmos.DataTransfer.Common": "2.1.5",
+          "Microsoft.Extensions.Configuration.Binder": "6.0.0",
+          "System.ComponentModel.Composition": "6.0.0",
+          "System.Linq.Async": "6.0.1",
+          "datatransfer-interfaces": "2.1.5"
+        },
+        "runtime": {
+          "Cosmos.DataTransfer.JsonExtension.dll": {}
+        }
+      },
+      "AWSSDK.Core/3.7.106.22": {
+        "runtime": {
+          "lib/netcoreapp3.1/AWSSDK.Core.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.106.22"
+          }
+        }
+      },
+      "AWSSDK.S3/3.7.104": {
+        "dependencies": {
+          "AWSSDK.Core": "3.7.106.22"
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/AWSSDK.S3.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.7.104.0"
+          }
+        }
+      },
+      "Azure.Core/1.31.0": {
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+          "System.Diagnostics.DiagnosticSource": "4.6.0",
+          "System.Memory.Data": "1.0.2",
+          "System.Numerics.Vectors": "4.5.0",
+          "System.Text.Encodings.Web": "4.7.2",
+          "System.Text.Json": "4.7.2",
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        },
+        "runtime": {
+          "lib/net6.0/Azure.Core.dll": {
+            "assemblyVersion": "1.31.0.0",
+            "fileVersion": "1.3100.23.21004"
+          }
+        }
+      },
+      "Azure.Storage.Blobs/12.16.0": {
+        "dependencies": {
+          "Azure.Storage.Common": "12.15.0",
+          "System.Text.Json": "4.7.2"
+        },
+        "runtime": {
+          "lib/net6.0/Azure.Storage.Blobs.dll": {
+            "assemblyVersion": "12.16.0.0",
+            "fileVersion": "12.1600.23.21104"
+          }
+        }
+      },
+      "Azure.Storage.Common/12.15.0": {
+        "dependencies": {
+          "Azure.Core": "1.31.0",
+          "System.IO.Hashing": "6.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/Azure.Storage.Common.dll": {
+            "assemblyVersion": "12.15.0.0",
+            "fileVersion": "12.1500.23.21104"
+          }
+        }
+      },
+      "Microsoft.Bcl.AsyncInterfaces/6.0.0": {
+        "runtime": {
+          "lib/netstandard2.1/Microsoft.Bcl.AsyncInterfaces.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "Microsoft.Extensions.Configuration.Abstractions/6.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Primitives": "6.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Configuration.Abstractions.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "Microsoft.Extensions.Configuration.Binder/6.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "6.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Configuration.Binder.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/6.0.0": {
+        "runtime": {
+          "lib/net6.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "Microsoft.Extensions.Primitives/6.0.0": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/Microsoft.Extensions.Primitives.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "System.ComponentModel.Composition/6.0.0": {
+        "runtime": {
+          "lib/net6.0/System.ComponentModel.Composition.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "System.Diagnostics.DiagnosticSource/4.6.0": {},
+      "System.IO.Hashing/6.0.0": {
+        "runtime": {
+          "lib/net6.0/System.IO.Hashing.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
+          }
+        }
+      },
+      "System.Linq.Async/6.0.1": {
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "6.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/System.Linq.Async.dll": {
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.1.35981"
+          }
+        }
+      },
+      "System.Memory.Data/1.0.2": {
+        "dependencies": {
+          "System.Text.Encodings.Web": "4.7.2",
+          "System.Text.Json": "4.7.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Memory.Data.dll": {
+            "assemblyVersion": "1.0.2.0",
+            "fileVersion": "1.0.221.20802"
+          }
+        }
+      },
+      "System.Numerics.Vectors/4.5.0": {},
+      "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
+      "System.Text.Encodings.Web/4.7.2": {},
+      "System.Text.Json/4.7.2": {},
+      "System.Threading.Tasks.Extensions/4.5.4": {},
+      "Cosmos.DataTransfer.AwsS3Storage/2.1.5": {
+        "dependencies": {
+          "AWSSDK.S3": "3.7.104",
+          "Microsoft.Extensions.Configuration.Binder": "6.0.0",
+          "datatransfer-interfaces": "2.1.5"
+        },
+        "runtime": {
+          "Cosmos.DataTransfer.AwsS3Storage.dll": {}
+        }
+      },
+      "Cosmos.DataTransfer.AzureBlobStorage/2.1.5": {
+        "dependencies": {
+          "Azure.Storage.Blobs": "12.16.0",
+          "Microsoft.Extensions.Configuration.Binder": "6.0.0",
+          "datatransfer-interfaces": "2.1.5"
+        },
+        "runtime": {
+          "Cosmos.DataTransfer.AzureBlobStorage.dll": {}
+        }
+      },
+      "Cosmos.DataTransfer.Common/2.1.5": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Binder": "6.0.0",
+          "datatransfer-interfaces": "2.1.5"
+        },
+        "runtime": {
+          "Cosmos.DataTransfer.Common.dll": {}
+        }
+      },
+      "datatransfer-interfaces/2.1.5": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "6.0.0",
+          "Microsoft.Extensions.Logging.Abstractions": "6.0.0"
+        },
+        "runtime": {
+          "Cosmos.DataTransfer.Interfaces.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Cosmos.DataTransfer.JsonExtension/2.1.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AWSSDK.Core/3.7.106.22": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-eIem8ZiuJXvd4V8UjSCiCL0gBdYbG8Bap7BNBRrGGS53NVtZeFk7SpCjAIcWbtHkudvi/Cegm20UDW688m17pw==",
+      "path": "awssdk.core/3.7.106.22",
+      "hashPath": "awssdk.core.3.7.106.22.nupkg.sha512"
+    },
+    "AWSSDK.S3/3.7.104": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-AhhrVtn52yZecCf61gBZIx+52/2K87ei3nu6VyvJVfE6SQXYpYMIYr6pCM39SbCwCXZTBcPZ1dTgv34i724hag==",
+      "path": "awssdk.s3/3.7.104",
+      "hashPath": "awssdk.s3.3.7.104.nupkg.sha512"
+    },
+    "Azure.Core/1.31.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YZlzaVS4XpPPIob934+UFfxvxMWe05PG3FDfwAXZz+MY+ShDJCjMokfrfh18F7VDW5tG0iMbPVjigeL6crGCiQ==",
+      "path": "azure.core/1.31.0",
+      "hashPath": "azure.core.1.31.0.nupkg.sha512"
+    },
+    "Azure.Storage.Blobs/12.16.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1ibzh49byOzB2ds6k9bsPqXvxxzdc2U9+MmooDr/lYJHgaWEnPZYX/i04vH0oN0jBGN1diW4N27xER8npvOzCw==",
+      "path": "azure.storage.blobs/12.16.0",
+      "hashPath": "azure.storage.blobs.12.16.0.nupkg.sha512"
+    },
+    "Azure.Storage.Common/12.15.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/SAgn9hhjfHO0RPWp0ilGLr3aMPz+rrz6iRgLKTb1708pI78WLtsQ7/kGooUbCU2flSnk/egmJ0Qj9rFVks/nA==",
+      "path": "azure.storage.common/12.15.0",
+      "hashPath": "azure.storage.common.12.15.0.nupkg.sha512"
+    },
+    "Microsoft.Bcl.AsyncInterfaces/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UcSjPsst+DfAdJGVDsu346FX0ci0ah+lw3WRtn18NUwEqRt70HaOQ7lI72vy3+1LxtqI3T5GWwV39rQSrCzAeg==",
+      "path": "microsoft.bcl.asyncinterfaces/6.0.0",
+      "hashPath": "microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Configuration.Abstractions/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qWzV9o+ZRWq+pGm+1dF+R7qTgTYoXvbyowRoBxQJGfqTpqDun2eteerjRQhq5PQ/14S+lqto3Ft4gYaRyl4rdQ==",
+      "path": "microsoft.extensions.configuration.abstractions/6.0.0",
+      "hashPath": "microsoft.extensions.configuration.abstractions.6.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Configuration.Binder/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-b3ErKzND8LIC7o08QAVlKfaEIYEvLJbtmVbFZVBRXeu9YkKfSSzLZfR1SUfQPBIy9mKLhEtJgGYImkcMNaKE0A==",
+      "path": "microsoft.extensions.configuration.binder/6.0.0",
+      "hashPath": "microsoft.extensions.configuration.binder.6.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging.Abstractions/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/HggWBbTwy8TgebGSX5DBZ24ndhzi93sHUBDvP1IxbZD7FDokYzdAr6+vbWGjw2XAfR2EJ1sfKUotpjHnFWPxA==",
+      "path": "microsoft.extensions.logging.abstractions/6.0.0",
+      "hashPath": "microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Primitives/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9+PnzmQFfEFNR9J2aDTfJGGupShHjOuGw4VUv+JB044biSHrnmCIMD+mJHmb2H7YryrfBEXDurxQ47gJZdCKNQ==",
+      "path": "microsoft.extensions.primitives/6.0.0",
+      "hashPath": "microsoft.extensions.primitives.6.0.0.nupkg.sha512"
+    },
+    "System.ComponentModel.Composition/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-60Qv+F7oxomOjJeTDA5Z4iCyFbQ0B/2Mi5HT+13pxxq0lVnu2ipbWMzFB+RWKr3wWKA8BSncXr9PH/fECwMX5Q==",
+      "path": "system.componentmodel.composition/6.0.0",
+      "hashPath": "system.componentmodel.composition.6.0.0.nupkg.sha512"
+    },
+    "System.Diagnostics.DiagnosticSource/4.6.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-mbBgoR0rRfl2uimsZ2avZY8g7Xnh1Mza0rJZLPcxqiMWlkGukjmRkuMJ/er+AhQuiRIh80CR/Hpeztr80seV5g==",
+      "path": "system.diagnostics.diagnosticsource/4.6.0",
+      "hashPath": "system.diagnostics.diagnosticsource.4.6.0.nupkg.sha512"
+    },
+    "System.IO.Hashing/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Rfm2jYCaUeGysFEZjDe7j1R4x6Z6BzumS/vUT5a1AA/AWJuGX71PoGB0RmpyX3VmrGqVnAwtfMn39OHR8Y/5+g==",
+      "path": "system.io.hashing/6.0.0",
+      "hashPath": "system.io.hashing.6.0.0.nupkg.sha512"
+    },
+    "System.Linq.Async/6.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0YhHcaroWpQ9UCot3Pizah7ryAzQhNvobLMSxeDIGmnXfkQn8u5owvpOH0K6EVB+z9L7u6Cc4W17Br/+jyttEQ==",
+      "path": "system.linq.async/6.0.1",
+      "hashPath": "system.linq.async.6.0.1.nupkg.sha512"
+    },
+    "System.Memory.Data/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-JGkzeqgBsiZwKJZ1IxPNsDFZDhUvuEdX8L8BDC8N3KOj+6zMcNU28CNN59TpZE/VJYy9cP+5M+sbxtWJx3/xtw==",
+      "path": "system.memory.data/1.0.2",
+      "hashPath": "system.memory.data.1.0.2.nupkg.sha512"
+    },
+    "System.Numerics.Vectors/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ==",
+      "path": "system.numerics.vectors/4.5.0",
+      "hashPath": "system.numerics.vectors.4.5.0.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg==",
+      "path": "system.runtime.compilerservices.unsafe/6.0.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+    },
+    "System.Text.Encodings.Web/4.7.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iTUgB/WtrZ1sWZs84F2hwyQhiRH6QNjQv2DkwrH+WP6RoFga2Q1m3f9/Q7FG8cck8AdHitQkmkXSY8qylcDmuA==",
+      "path": "system.text.encodings.web/4.7.2",
+      "hashPath": "system.text.encodings.web.4.7.2.nupkg.sha512"
+    },
+    "System.Text.Json/4.7.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-TcMd95wcrubm9nHvJEQs70rC0H/8omiSGGpU4FQ/ZA1URIqD4pjmFJh2Mfv1yH1eHgJDWTi2hMDXwTET+zOOyg==",
+      "path": "system.text.json/4.7.2",
+      "hashPath": "system.text.json.4.7.2.nupkg.sha512"
+    },
+    "System.Threading.Tasks.Extensions/4.5.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+      "path": "system.threading.tasks.extensions/4.5.4",
+      "hashPath": "system.threading.tasks.extensions.4.5.4.nupkg.sha512"
+    },
+    "Cosmos.DataTransfer.AwsS3Storage/2.1.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Cosmos.DataTransfer.AzureBlobStorage/2.1.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Cosmos.DataTransfer.Common/2.1.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "datatransfer-interfaces/2.1.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

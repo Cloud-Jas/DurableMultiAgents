@@ -33,8 +33,7 @@ namespace TravelService.MultiAgent.Orchestrator
             databaseName: "ContosoTravelAgency",
             containerName: "Bookings",
             Connection = "cosmosDB",
-            LeaseContainerName = "leases",
-            CreateLeaseContainerIfNotExists = true)] IReadOnlyList<Booking> bookings,
+            LeaseContainerName = "leases")] IReadOnlyList<Booking> bookings,
             ILogger log)
         {
             if (bookings != null && bookings.Count > 0)
