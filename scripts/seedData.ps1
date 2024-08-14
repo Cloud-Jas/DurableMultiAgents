@@ -37,12 +37,12 @@ try
 {
     Write-Output "Seed data into database $databaseName..."
     & "./dmt.exe"
-    Write-Output "End Load Data of $containerName"
+    Write-Output "End seed data into database $databaseName..."
     New-Item -Path $flagFilePath -ItemType File -Force | Out-Null
     Remove-Item -Path $destinationJsonFilePath -Force -ErrorAction Stop
     Write-Output "Migration completed successfully. Flag file created."
 } 
 catch 
 {
-    Write-Error "An error occurred while processing container $containerName. Exception details: $_"
+    Write-Error "An error occurred while seeding data. Exception details: $_"
 }
