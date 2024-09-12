@@ -8,18 +8,24 @@ using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Models;
 
 namespace TravelService.MultiAgent.Orchestrator.Services
-{    
-    public class PostmarkServiceClient : IPostmarkServiceClient
-    {
-        private readonly HttpClient _httpClient;
+{
+   public class PostmarkServiceClient : IPostmarkServiceClient
+   {
+      private readonly HttpClient _httpClient;
 
-        public PostmarkServiceClient(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
+      public PostmarkServiceClient(HttpClient httpClient)
+      {
+         _httpClient = httpClient;
+      }
 
-        public async Task SendEmail(PostmarkEmail postmarkEmail)
-        {
+      public async Task SendEmail(PostmarkEmail postmarkEmail)
+      {
+         if (Environment.GetEnvironmentVariable("PostmarkServerToken") == null || Environment.GetEnvironmentVariable("PostmarkServerToken") == string.Empty)
+         {
+            await Task.CompletedTask;
+         }
+         else
+         {
             string postmarkApiUrl = "https://api.postmarkapp.com/email";
             _httpClient.BaseAddress = new Uri("https://api.postmarkapp.com");
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
@@ -29,9 +35,10 @@ namespace TravelService.MultiAgent.Orchestrator.Services
             HttpResponseMessage response = await _httpClient.PostAsync(postmarkApiUrl, content);
             if (!response.IsSuccessStatusCode)
             {
-                string responseBody = await response.Content.ReadAsStringAsync();
-                throw new Exception($"Failed to send email. Status code: {response.StatusCode}. Response body: {responseBody}");
+               string responseBody = await response.Content.ReadAsStringAsync();
+               throw new Exception($"Failed to send email. Status code: {response.StatusCode}. Response body: {responseBody}");
             }
-        }
-    }
+         }
+      }
+   }
 }

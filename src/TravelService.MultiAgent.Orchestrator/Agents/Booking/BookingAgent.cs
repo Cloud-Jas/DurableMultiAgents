@@ -4,15 +4,9 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.PromptTemplates.Liquid;
-using Microsoft.SemanticKernel.Prompty;
 using TravelService.MultiAgent.Orchestrator.Agents.Booking.Plugins;
-using TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
-using TravelService.MultiAgent.Orchestrator.Services;
 
 #pragma warning disable SKEXP0040 
 namespace TravelService.MultiAgent.Orchestrator.Agents

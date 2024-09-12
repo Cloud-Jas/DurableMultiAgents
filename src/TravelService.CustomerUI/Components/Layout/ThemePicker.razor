@@ -1,0 +1,22 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@inject IJSRuntime JS
+
+<loading-theme storage-name="theme"></loading-theme>
+<loading-theme-info></loading-theme-info>
+<FluentDesignTheme @bind-Mode="@Mode" StorageName="theme" @bind-Mode:after="@UpdateThemeAsync" />
+
+<button @onclick="@ChangeThemeAsync" title="Change theme"></button>
+
+@code {
+   DesignThemeModes Mode = DesignThemeModes.System;
+
+   async Task ChangeThemeAsync()
+   {
+      Mode = await JS.InvokeAsync<string>("LoadingThemeInfo.getEffectiveTheme") == "dark"
+          ? DesignThemeModes.Light
+          : DesignThemeModes.Dark;
+   }
+
+   async Task UpdateThemeAsync()
+       => await JS.InvokeVoidAsync("LoadingThemeInfo.updateEffectiveThemeClass");
+}

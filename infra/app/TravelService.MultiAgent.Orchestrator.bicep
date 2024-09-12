@@ -3,6 +3,7 @@ param location string
 param tags object
 param identityName string
 param storageAccountName string
+param redisCacheName string
 param applicationInsightsName string
 @secure()
 param appDefinition object
@@ -114,7 +115,8 @@ resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   properties: {
     databaseAccountOfferType: 'Standard'
     capabilities:[      
-      {name: 'EnableNoSQLVectorSearch'}      
+      {name: 'EnableNoSQLVectorSearch'}
+      {name: 'EnableServerless'}
     ]
     locations: [
       {
@@ -122,7 +124,7 @@ resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
         failoverPriority: 0
       }
     ]
-    disableKeyBasedMetadataWriteAccess: true
+    disableKeyBasedMetadataWriteAccess: true   
   }
 }
 
@@ -388,6 +390,20 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01
   }
 }]
 
+resource redisCache 'Microsoft.Cache/redis@2023-08-01' = {
+  name: redisCacheName
+  location: location
+  properties: {
+    enableNonSslPort: false
+    minimumTlsVersion: '1.2'
+    sku: {
+      capacity: 0
+      family: 'C'
+      name: 'Basic'
+    }   
+  }
+}
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: name
   location: location
@@ -493,7 +509,11 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'cosmosDB__clientId'
           value: identity.properties.clientId
-        }        
+        }       
+        {
+          name: 'RedisConnectionString'
+          value: '${redisCacheName}.redis.cache.windows.net,abortConnect=false,ssl=true,password=${redisCache.listKeys().primaryKey}'
+        }  
       ],env, map(secrets, secret => {
         name: secret.name
         value: secret.value
@@ -505,3 +525,5 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
 output apiUrl string = 'https://${openAIService.name}.openai.azure.com/'
 output chatGptDeploymentName string = chatGptDeploymentName
 output cosmosDBAccountName string = cosmosDBAccount.name
+output functionAppName string = functionApp.name
+output redisCacheName string = redisCache.name

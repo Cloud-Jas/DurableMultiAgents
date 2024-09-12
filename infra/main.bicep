@@ -13,7 +13,7 @@ param location string
 param travelServiceMultiAgentOrchestratorDefinition object
 
 @description('Location for the OpenAI resource group')
-@allowed(['australiaeast', 'canadaeast', 'francecentral', 'southindia', 'uksouth', 'swedencentral', 'westus'])
+@allowed(['australiaeast', 'canadaeast', 'francecentral', 'southindia', 'uksouth', 'swedencentral', 'westus', 'eastus'])
 @metadata({
   azd: {
     type: 'location'
@@ -76,6 +76,7 @@ module travelServiceMultiAgentOrchestrator './app/TravelService.MultiAgent.Orche
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     runtimeName: 'dotnet-isolated'
     runtimeVersion: '8.0'    
+    redisCacheName: '${abbrs.cacheRedis}travelservice${resourceToken}'
     storageAccountName: '${abbrs.storageStorageAccounts}${resourceToken}'    
     appDefinition: travelServiceMultiAgentOrchestratorDefinition    
     openAiLocation: openAILocation
@@ -107,6 +108,20 @@ module travelServiceMultiAgentOrchestrator './app/TravelService.MultiAgent.Orche
     chatGptDeploymentName: chatGptDeploymentName        
     embeddingDeploymentName: embeddingDeploymentName
     cosmos_name: '${abbrs.documentDBDatabaseAccounts}${resourceToken}'
+  }
+  scope: rg
+}
+
+module travelServiceCustomerUI './app/TravelService.CustomerUI.bicep' = {
+  name: 'TravelService.CustomerUI.AppService'
+  params: {
+    name: '${abbrs.webSites}${resourceToken}'
+    location: location
+    tags: tags    
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    redisCacheName: travelServiceMultiAgentOrchestrator.outputs.redisCacheName
+    functionAppName: travelServiceMultiAgentOrchestrator.outputs.functionAppName
+    appServicePlanName: 'asp-${abbrs.webSites}${resourceToken}'    
   }
   scope: rg
 }

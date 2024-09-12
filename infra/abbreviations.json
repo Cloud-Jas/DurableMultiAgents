@@ -1,5 +1,6 @@
 {
     "analysisServicesServers": "as",
+    "webSites": "ws-",
     "apiManagementService": "apim-",
     "appConfigurationConfigurationStores": "appcs-",
     "appManagedEnvironments": "cae-",

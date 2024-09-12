@@ -1,0 +1,12 @@
+﻿button {
+    border: none;
+    background: none;
+}
+
+    button:after {
+        content: '🌞';
+    }
+
+html.dark-mode button:after {
+    content: '🌙';
+}

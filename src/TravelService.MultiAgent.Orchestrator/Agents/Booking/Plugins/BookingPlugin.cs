@@ -51,7 +51,7 @@ namespace TravelService.MultiAgent.Orchestrator.Agents.Booking.Plugins
                 return "Error sending booking confirmation mail.";
             }
 
-            return "Booking confirmation mail sent successfully.";
+            return bookingMailConfirmationSummary;
         }
         public async Task SendEmailAsync(IPostmarkServiceClient postmarkServiceClient, string emailId, string emailBody)
         {

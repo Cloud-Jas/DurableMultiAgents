@@ -1,0 +1,27 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+<div class="travelagency-header">
+    <div class="travelagency-header-hero">
+        <img role="presentation" src="images/header.webp" alt="Travel destination landscape" />
+        <div class="travelagency-header-overlay"></div>
+    </div>
+    <div class="travelagency-header-container">
+        <nav class="travelagency-header-navbar">
+            <a class="logo logo-header" href="">
+                <img alt="ContosoTravelAgency" src="images/logo.png" class="logo logo-header" />
+            </a>
+            <div class="nav-links">
+                <a href="#destinations">Destinations</a>
+                <a href="#packages">Packages</a>
+                <a href="#about">About Us</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </nav>
+        <div class="travelagency-header-intro">
+            <h1>Discover Your Next Adventure</h1>
+            <p>Explore the world with Contoso Travel Agency</p>
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size24.Airplane())" class="cta-button">
+                Plan Your Trip
+            </FluentButton>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,233 @@
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+::deep header {
+    position: sticky;
+    top: 0;
+    background-color: var(--neutral-layer-4) !important;
+    border-bottom: calc(var(--stroke-width)* 2px) solid var(--accent-fill-rest);
+    color: var(--neutral-foreground-rest) !important;
+}
+
+.main-title {
+    font-weight: 800;
+    margin-right: 0.75rem;
+    padding-right: 0.75rem;    
+    text-decoration: none;
+    color: var(--neutral-foreground-rest);
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 100vh;
+    background: var(--neutral-layer-1);
+    --header-height: 50px;
+}
+
+::deep header {
+    height: var(--header-height);
+}
+
+.hamburger-menu {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right:10px;
+    color: var(--neutral-foreground-rest);
+}
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background-color: var(--neutral-layer-1);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease;
+    z-index: 1000;
+    padding: 2rem 1rem;
+}
+
+    .sidebar.open {
+        left: 0;
+        overflow: auto;
+    }
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.chat-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.chat-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--neutral-stroke-active);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .chat-item:hover {
+        background-color: var(--neutral-layer-2);
+    }
+
+.chat-icon {
+    margin-right: 1rem;
+    color: var(--accent-fill-rest);
+}
+
+.chat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-title {
+    font-weight: bold;
+}
+
+.chat-date {
+    font-size: 0.8rem;
+    color: var(--neutral-foreground-hint);
+}
+.travelagency-header {
+    position: relative;
+    height: 800px;
+    overflow: hidden;
+}
+
+.travelagency-header-hero {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+    .travelagency-header-hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.travelagency-header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+}
+
+.travelagency-header-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.travelagency-header-intro {
+    text-align: center;
+    color: white;
+}
+
+    .travelagency-header-intro h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .travelagency-header-intro p {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+.cta-button {
+    font-size: 1.1rem;
+    padding: 0.75rem 1.5rem;
+    background: padding-box linear-gradient( var(--accent-fill-rest), var(--accent-fill-rest)),border-box var(--accent-fill-rest) !important
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1rem;
+}
+
+    .footer-links a {
+        color: var(--neutral-foreground-rest);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.3s ease;
+    }
+
+        .footer-links a:hover {
+            color: var(--accent-fill-rest);
+        }
+
+@media (max-width: 768px) {
+    .header-content, .footer-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .travelagency-header {
+        height: 400px;
+    }
+
+    .travelagency-header-intro h1 {
+        font-size: 2rem;
+    }
+
+    .travelagency-header-intro p {
+        font-size: 1rem;
+    }
+}

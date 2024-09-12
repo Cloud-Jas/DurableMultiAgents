@@ -1,0 +1,149 @@
+﻿::deep .splitter {
+    height: calc(100vh - var(--header-height));
+}
+
+    ::deep .splitter [slot='1'] {
+        display: flex;
+        flex-direction: column;
+    }
+
+    ::deep .splitter [slot='2'] {
+        background-color: color-mix(in srgb, var(--neutral-layer-2) 95%, grey);
+        color: var(--neutral-foreground-rest);
+    }
+
+html.dark-mode .Booking ::deep .splitter [slot='2'] {
+    background-color: color-mix(in srgb, var(--neutral-layer-2) 70%, grey);
+}
+
+.details {
+    padding: 1.5rem 1.5rem;
+    background: var(--neutral-layer-1);
+    box-shadow: 0px 2px 5px #0000000d;
+    border-bottom: calc(var(--stroke-width)* 1px) solid var(--neutral-stroke-active);
+    z-index: 2;
+}
+
+.messages {
+    flex-grow: 1;
+    padding: 0 1.5rem;
+    background: var(--neutral-layer-3);
+    overflow-y: scroll;
+    /* Make the scrollbar default to being at the end, instead of the start */
+    display: flex;
+    flex-direction: column-reverse;
+    /* Fix subpixel text rendering glitch */
+    clip-path: inset(1px 0 0 0);
+}
+
+.write-message {
+    height: 130px;
+    background: var(--neutral-layer-2);
+    border-top: calc(var(--stroke-width)* 1px) solid var(--neutral-stroke-active);
+    flex-shrink: 0;
+    padding: 1rem 1.5rem;
+    box-shadow: 0px -2px 5px #0000000d;
+    z-index: 1;
+    display: flex;
+    transition: height 0.3s cubic-bezier(.16,.75,.35,1.02);
+    transition-delay: 0.05s;
+}
+
+    .write-message:focus-within, .write-message:has(.modified) {
+        height: 250px;
+    }
+
+    .write-message ::deep form {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .write-message ::deep fluent-text-area::part(control) {
+        flex-grow: 1;
+    }
+
+.actions {
+    opacity: 0;
+    transform: scaleY(0);
+    height: 0;
+    transition-property: opacity transform height;
+    transition-timing-function: cubic-bezier(.16,.75,.35,1.02);
+    transition-duration: 0.3s;
+    transition-delay: 0.05s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.write-message:focus-within .actions, .write-message:has(.modified) .actions {
+    opacity: 1;
+    height: 2.75rem;
+    transform: scaleY(1);
+    margin-top: 0.75rem;
+}
+
+.assistant {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.messages-scroller {
+    /* Make the scrollbar default to being at the end, instead of the start */
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.messages {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1.5rem 0 0.75rem;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: auto;
+}
+
+.suggestions {
+    display: flex;
+    justify-content: center;    
+    margin-top: 25px;
+    margin-bottom:10px;
+}
+
+    .suggestions p {
+        opacity: 0.8;
+        font-size: 0.85rem;
+    }
+
+    .suggestions a svg {
+        width: 1rem;
+        color: var(--accent-fill-rest);
+        flex-shrink: 0;
+        flex-grow: 0;
+        margin-top: 0.15rem;
+    }
+
+    .suggestions a {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-left:10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        text-align: center;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        transition: background-color 0.3s;
+    }
+        .suggestions a:hover {
+            border-color: var(--accent-fill-rest) !important;
+        }
+
+html.dark-mode .suggestions a {
+    background-color: var(--neutral-stroke-focus);
+    border: 1px solid var(--neutral-stroke-hover);
+    color: var(--neutral-foreground-rest);
+}

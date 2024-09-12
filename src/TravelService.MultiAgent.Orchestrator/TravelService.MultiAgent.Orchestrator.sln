@@ -9,8 +9,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TravelService.Plugins.Commo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{BE96594F-3EAC-47B2-8107-45B22D0780E2}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\infra\abbreviations.json = ..\..\infra\abbreviations.json
+		..\..\azure.yaml = ..\..\azure.yaml
+		..\..\infra\main.bicep = ..\..\infra\main.bicep
+		..\..\infra\main.parameters.json = ..\..\infra\main.parameters.json
+		..\..\scripts\migrationCompleted.flag = ..\..\scripts\migrationCompleted.flag
 		..\..\README.md = ..\..\README.md
+		..\..\scripts\seedData.ps1 = ..\..\scripts\seedData.ps1
+		..\..\infra\app\TravelService.CustomerUI.bicep = ..\..\infra\app\TravelService.CustomerUI.bicep
+		..\..\infra\app\TravelService.MultiAgent.Orchestrator.bicep = ..\..\infra\app\TravelService.MultiAgent.Orchestrator.bicep
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TravelService.CustomerUI", "..\TravelService.CustomerUI\TravelService.CustomerUI.csproj", "{4507C761-1647-4AA0-A92F-C7DD186DC4C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +36,10 @@ Global
 		{F6CEEA76-E465-4508-8823-4EEAFD83A4B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6CEEA76-E465-4508-8823-4EEAFD83A4B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6CEEA76-E465-4508-8823-4EEAFD83A4B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4507C761-1647-4AA0-A92F-C7DD186DC4C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4507C761-1647-4AA0-A92F-C7DD186DC4C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4507C761-1647-4AA0-A92F-C7DD186DC4C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4507C761-1647-4AA0-A92F-C7DD186DC4C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -8,117 +8,219 @@ using Newtonsoft.Json.Linq;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.DurableOrchestrators;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
+using TravelService.MultiAgent.Orchestrator.Models;
 
 namespace TravelService.MultiAgent.Orchestrator
 {
-    public class FxTravelService
-    {
-        private readonly ICosmosClientService _cosmosClientService;
-        private readonly INL2SQLService _nL2SQLService;
-        public FxTravelService(ICosmosClientService cosmosClientService,INL2SQLService nL2SQLService)
-        {
-            _cosmosClientService = cosmosClientService;
-            _nL2SQLService = nL2SQLService;
-        }
+   public class FxTravelService
+   {
+      private readonly ICosmosClientService _cosmosClientService;
+      private readonly INL2SQLService _nL2SQLService;
+      public FxTravelService(ICosmosClientService cosmosClientService, INL2SQLService nL2SQLService)
+      {
+         _cosmosClientService = cosmosClientService;
+         _nL2SQLService = nL2SQLService;
+      }
 
-        [Function("MultiAgentOrchestration")]
-        public async Task<IActionResult> MultiAgentOrchestrationTrigger(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req,
-            [DurableClient] DurableTaskClient client,
-            FunctionContext executionContext)
-        {
-            ILogger logger = executionContext.GetLogger("MultiAgentOrchestration");
-            
-            string sessionId = req.Headers.GetValues("Session-Id")!.FirstOrDefault();
+      [Function("MultiAgentOrchestration")]
+      public async Task<IActionResult> MultiAgentOrchestrationTrigger(
+          [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req,
+          [DurableClient] DurableTaskClient client,
+          FunctionContext executionContext)
+      {
+         ILogger logger = executionContext.GetLogger("MultiAgentOrchestration");
 
-            string userId = req.Headers.GetValues("User-Id")!.FirstOrDefault();
+         string sessionId = req.Headers.GetValues("Session-Id")!.FirstOrDefault();
 
-            if (string.IsNullOrEmpty(sessionId) || string.IsNullOrEmpty(userId))
+         string userId = req.Headers.GetValues("User-Id")!.FirstOrDefault();
+
+         if (string.IsNullOrEmpty(sessionId) || string.IsNullOrEmpty(userId))
+         {
+            return new BadRequestObjectResult("Session-Id or User-Id header is missing.");
+         }
+
+         string userQuery = await new StreamReader(req.Body).ReadToEndAsync();
+
+         var requestData = JsonConvert.DeserializeObject<RequestData>(userQuery);
+
+         if (requestData == null)
+         {
+            return new BadRequestObjectResult("Invalid request data.");
+         }
+
+         var userDetails = await _cosmosClientService.FetchUserDetailsAsync(userId);
+
+         var chatHistory = await _cosmosClientService.FetchChatHistoryAsync(sessionId);
+
+         requestData.ChatHistory = chatHistory;
+         requestData.UserId = userId;
+         requestData.UserName = userDetails.firstName;
+         requestData.UserMailId = userDetails.email;
+
+         string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
+             nameof(ManagerOrchestrator), requestData);
+
+         chatHistory.Add("User: " + requestData.UserQuery);
+
+         await _cosmosClientService.StoreChatHistoryAsync(sessionId, requestData.UserQuery, requestData.UserId, requestData.UserName, false);
+
+         var response = await client.CreateCheckStatusResponseAsync(req, instanceId);
+
+         var statusQueryGetUri = response.Headers.GetValues("Location").First();
+
+         string responseBody = await PollForCompletion(statusQueryGetUri, logger);        
+
+         return responseBody == "AcceptedResult" ? new AcceptedResult() : new OkObjectResult(responseBody);
+      }
+
+      // To mimic Request-Reply pattern in Azure durable functions I'm using polling to check the status of the orchestration
+      // There could be a better way to do this, but I'm not aware of it.
+      private async Task<string> PollForCompletion(string statusQueryGetUri, ILogger log)
+      {
+         JObject result = null;
+
+         string content = string.Empty;
+
+         bool isCompleted = false;
+
+         DateTime startTime = DateTime.UtcNow;
+
+         using HttpClient httpClient = new HttpClient();
+
+         while (!isCompleted)
+         {
+            HttpResponseMessage response = await httpClient.GetAsync(statusQueryGetUri);
+
+            response.EnsureSuccessStatusCode();
+
+            content = await response.Content.ReadAsStringAsync();
+
+            result = JObject.Parse(content);
+
+            string runtimeStatus = result["runtimeStatus"]?.ToString()!;
+
+            isCompleted = (runtimeStatus == "Completed" || runtimeStatus == "Failed");
+
+            if (!isCompleted)
             {
-                return new BadRequestObjectResult("Session-Id or User-Id header is missing.");
+               log.LogInformation($"Orchestration not yet completed. Status: {runtimeStatus}");
+
+               // To Avoid timeout issues after 5 minutes, I have a buffer till 4 minutes,
+               // after which I'll return AcceptedResult to handle the response in asynchronous request-reply pattern.
+
+               if (DateTime.UtcNow - startTime > TimeSpan.FromMinutes(4))
+               {
+                  return "AcceptedResult";
+               }
+
+               await Task.Delay(TimeSpan.FromMilliseconds(200));
             }
+         }
 
-            string userQuery = await new StreamReader(req.Body).ReadToEndAsync();
+         return result["output"]?.ToString();
+      }
 
-            var requestData = JsonConvert.DeserializeObject<RequestData>(userQuery);
+      [Function("ChatAssistant")]
+      public async Task<IActionResult> ChatAssistant(
+          [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ChatAssistant")] HttpRequestData req,
+          [DurableClient] DurableTaskClient client,
+          FunctionContext executionContext)
+      {
+         ILogger logger = executionContext.GetLogger("ChatAssistant");
 
-            if (requestData == null)
-            {
-                return new BadRequestObjectResult("Invalid request data.");
-            }
+         string sessionId = req.Headers.GetValues("Session-Id")!.FirstOrDefault();
 
-            var userDetails = await _cosmosClientService.FetchUserDetailsAsync(userId);
+         string userId = req.Headers.GetValues("User-Id")!.FirstOrDefault();
 
-            var chatHistory = await _cosmosClientService.FetchChatHistoryAsync(sessionId);
+         if (string.IsNullOrEmpty(sessionId) || string.IsNullOrEmpty(userId))
+         {
+            return new BadRequestObjectResult("Session-Id or User-Id header is missing.");
+         }
 
-            requestData.ChatHistory = chatHistory;
-            requestData.UserId = userId;
-            requestData.UserName = userDetails.firstName;
-            requestData.UserMailId = userDetails.email;
+         string userQuery = await new StreamReader(req.Body).ReadToEndAsync();
 
-            string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
-                nameof(ManagerOrchestrator), requestData);
+         var requestData = JsonConvert.DeserializeObject<RequestData>(userQuery);
 
-            chatHistory.Add("User: " + requestData.UserQuery);
+         if (requestData == null)
+         {
+            return new BadRequestObjectResult("Invalid request data.");
+         }
 
-            await _cosmosClientService.StoreChatHistoryAsync(sessionId, "User: " + requestData.UserQuery);
+         var userDetails = await _cosmosClientService.FetchUserDetailsAsync(userId);
 
-            var response = await client.CreateCheckStatusResponseAsync(req, instanceId);            
+         var chatHistory = await _cosmosClientService.FetchChatHistoryAsync(sessionId);
 
-            var statusQueryGetUri = response.Headers.GetValues("Location").First();
+         requestData.ChatHistory = chatHistory;
+         requestData.UserId = userId;
+         requestData.SessionId = sessionId;
+         requestData.UserName = userDetails.firstName;
+         requestData.UserMailId = userDetails.email;
 
-            string responseBody = await PollForCompletion(statusQueryGetUri, logger);
+         string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
+             nameof(ManagerOrchestrator), requestData);
 
-            await _cosmosClientService.StoreChatHistoryAsync(sessionId, responseBody);
+         chatHistory.Add("User: " + requestData.UserQuery);
 
-            return responseBody == "AcceptedResult" ? new AcceptedResult() : new OkObjectResult(responseBody);
-        }
+         await _cosmosClientService.StoreChatHistoryAsync(sessionId, requestData.UserQuery, requestData.UserId, requestData.UserName, false);         
 
-        // To mimic Request-Reply pattern in Azure durable functions I'm using polling to check the status of the orchestration
-        // There could be a better way to do this, but I'm not aware of it.
-        private async Task<string> PollForCompletion(string statusQueryGetUri, ILogger log)
-        {
-            JObject result = null;
+         return new AcceptedResult();
+      }
 
-            string content = string.Empty;
+      [Function("GetChatHistories")]
+      public async Task<IActionResult> GetChatHistories(
+          [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "chat/{sessionId}")] HttpRequestData req,
+          string sessionId)
+      {
+         string userId = req.Headers.GetValues("User-Id")!.FirstOrDefault();
 
-            bool isCompleted = false;
+         if (string.IsNullOrEmpty(userId))
+         {
+            return new BadRequestObjectResult("User-Id header is missing.");
+         }
 
-            DateTime startTime = DateTime.UtcNow;
+         var chatRecords = await _cosmosClientService.FetchChatHistoriesAsync(sessionId, userId);
 
-            using HttpClient httpClient = new HttpClient();
+         if (chatRecords == null || !chatRecords.Any())
+         {
+            return new NotFoundResult();
+         }
 
-            while (!isCompleted)
-            {
-                HttpResponseMessage response = await httpClient.GetAsync(statusQueryGetUri);
+         var firstRecord = chatRecords.First();
+         var customerFullName = firstRecord.CustomerName;
 
-                response.EnsureSuccessStatusCode();
+         var bookingDetailsResult = new BookingDetailsResult(
+             sessionId,
+             customerFullName,
+             string.Empty,
+             chatRecords.Select(cr => new BookingDetailsResultMessage(
+                 cr.MessageId,
+                 cr.Timestamp,
+                 !cr.IsAssistant,
+                 cr.Message)).ToList()
+         );
 
-                content = await response.Content.ReadAsStringAsync();
+         return new OkObjectResult(bookingDetailsResult);
 
-                result = JObject.Parse(content);
+      }
+      [Function("GetChatHistoryItems")]
+      public async Task<IActionResult> GetChatHistorItems(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "chat")] HttpRequestData req)
+      {
+         string userId = req.Headers.GetValues("User-Id")!.FirstOrDefault();
 
-                string runtimeStatus = result["runtimeStatus"]?.ToString()!;
+         if (string.IsNullOrEmpty(userId))
+         {
+            return new BadRequestObjectResult("User-Id header is missing.");
+         }
 
-                isCompleted = (runtimeStatus == "Completed" || runtimeStatus == "Failed");
+         var chatRecords = await _cosmosClientService.FetchChatSummariesByUserIdAsync(userId);
 
-                if (!isCompleted)
-                {
-                    log.LogInformation($"Orchestration not yet completed. Status: {runtimeStatus}");
+         if (chatRecords == null || !chatRecords.Any())
+         {
+            return new NotFoundResult();
+         }
 
-                    // To Avoid timeout issues after 5 minutes, I have a buffer till 4 minutes,
-                    // after which I'll return AcceptedResult to handle the response in asynchronous request-reply pattern.
-
-                    if (DateTime.UtcNow - startTime > TimeSpan.FromMinutes(4)) 
-                    {
-                        return "AcceptedResult";
-                    }
-
-                    await Task.Delay(TimeSpan.FromMilliseconds(200));
-                }
-            }
-
-            return result["output"]?.ToString();
-        }
-    }
+         return new OkObjectResult(chatRecords);
+      }
+   }
 }

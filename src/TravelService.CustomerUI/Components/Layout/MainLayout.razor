@@ -1,0 +1,160 @@
+﻿@using Microsoft.FluentUI.AspNetCore.Components
+@using TravelService.CustomerUI.Clients.Backend
+@using TravelService.CustomerUI.Components.Pages.Booking
+@inject IConfiguration Configuration
+@inject IJSRuntime JSRuntime
+@inherits LayoutComponentBase
+@inject TravelAgentBackendClient Backend
+
+<div class="app">
+   <FluentLayout>
+      <FluentHeader Height="@(default)">
+         <button class="hamburger-menu" @onclick="ToggleSidebar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <line x1="3" y1="12" x2="21" y2="12"></line>
+               <line x1="3" y1="6" x2="21" y2="6"></line>
+               <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+         </button>
+         <img src="https://contosotravelagency.iamdivakarkumar.com/images/logo.png" width="50">
+         <a href="" class="main-title">
+            ContosoTravelAgency
+         </a>
+         <SectionOutlet SectionName="PageTitle" />
+         <LoginDisplay />
+         <span class="theme-picker">
+            <ThemePicker />
+         </span>
+      </FluentHeader>
+      <div class="sidebar @(IsSidebarOpen ? "open" : "")" @onclick:stopPropagation>
+         <h2>Chat History</h2>
+         @if (ChatHistory is null)
+         {
+            <div class="loading-progress">
+               <FluentProgress />
+            </div>
+         }
+         else
+         {
+            <ul class="chat-list">
+               @foreach (var chat in ChatHistory)
+               {
+                  <li class="chat-item" @onclick="() => LoadChat(chat.SessionId)">
+                     <div class="chat-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                     </div>
+                     <div class="chat-info">
+                        <span class="chat-title">@TruncateLastMessage(chat.LastMessage)</span>
+                        <span class="chat-date">@chat.LastMessageTimestamp.ToShortDateString()</span>
+                     </div>
+                  </li>
+               }
+            </ul>
+         }
+      </div>
+
+      @if (IsSidebarOpen)
+      {
+         <div class="sidebar-overlay" @onclick="CloseSidebar"></div>
+      }
+      <div class="travelagency-header">
+         <div class="travelagency-header-hero">
+            <img role="presentation" src="images/header.webp" alt="Travel destination landscape" />
+            <div class="travelagency-header-overlay"></div>
+         </div>
+         <div class="travelagency-header-container">
+            <div class="travelagency-header-intro">
+               <h1>Discover Your Next Adventure</h1>
+               <p>Explore the world with Contoso Travel Agency</p>
+               <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size24.Airplane())" class="cta-button" OnClick="@ScrollToMainContent">
+                  Plan Your Trip
+               </FluentButton>
+            </div>
+         </div>
+      </div>
+      <main class="main-content" id="main-content">
+          <TravelService.CustomerUI.Components.Pages.Booking.Booking @ref="BookingComponent" />         
+      </main>
+   </FluentLayout>
+</div>
+
+<div id="blazor-error-ui">
+   An unhandled error has occurred.
+   <a href="" class="reload">Reload</a>
+   <a class="dismiss">🗙</a>
+</div>
+@code {
+   private bool IsSidebarOpen { get; set; } = false;
+   private string userId;
+   Booking BookingComponent;
+   public class SessionSummary
+   {
+      public string SessionId { get; set; }
+      public string LastMessage { get; set; }
+      public DateTime LastMessageTimestamp { get; set; }
+   }
+   private List<SessionSummary> ChatHistory = new();
+
+   protected override void OnInitialized()
+   {
+      userId = Configuration["UserId"] ?? "P012";
+   }
+
+   protected override async Task OnParametersSetAsync()
+   {
+      ChatHistory = null;
+      ChatHistory = await Backend.GetBookingMessagesByUserIdAsync(userId);
+   }
+   private void ToggleSidebar()
+   {
+      IsSidebarOpen = !IsSidebarOpen;
+   }
+
+   private string TruncateLastMessage(string message)
+   {
+      const int maxLength = 20;
+      if (message.Length > maxLength)
+      {
+         return message.Substring(0, maxLength) + "...";
+      }
+      return message;
+   }
+   private void CloseSidebar()
+   {
+      IsSidebarOpen = false;
+   }
+
+   private async void LoadChat(string chatId)
+   {
+      Console.WriteLine($"Loading chat with ID: {chatId}");
+      BookingComponent.OnChatSelected(chatId);
+      CloseSidebar();
+      await JSRuntime.InvokeVoidAsync("scrollToElement", "main-content");
+      await ScrollToChatView();
+   }
+   private async Task ScrollToMainContent()
+   {
+      await JSRuntime.InvokeVoidAsync("scrollToElement", "main-content");
+   }
+
+   protected override async Task OnAfterRenderAsync(bool firstRender)
+   {
+      if (firstRender)
+      {
+         await ScrollToChatView();
+      }
+   }
+   private async Task ScrollToChatView()
+   {
+      await JSRuntime.InvokeVoidAsync("eval", @"
+                window.scrollToElement = function(elementId) {
+                    var element = document.getElementById(elementId);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            ");
+   }
+}

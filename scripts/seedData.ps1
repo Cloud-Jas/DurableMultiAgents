@@ -1,6 +1,8 @@
 param (
     [string]$cosmosDBAccountName,
     [string]$resourceGroupName, 
+    [string]$subscriptionId,
+    [string]$tenantId,
     [string]$databaseName = "ContosoTravelAgency"    
 )
 
@@ -16,6 +18,8 @@ if (Test-Path -Path $flagFilePath) {
 Write-Output "Seeding data in Cosmos DB account '$cosmosDBAccountName' in resource group '$resourceGroupName'..."
 Install-Module -Name Az.CosmosDB -Force -AllowClobber
 Import-Module Az.CosmosDB
+
+Connect-AzAccount -Tenant $tenantId -Subscription $subscriptionId
 
 $cosmosDBConnectionStrings = Get-AzCosmosDBAccountKey -ResourceGroupName $resourceGroupName -Name $cosmosDBAccountName -Type "ConnectionStrings"
 $cosmosDBPrimarySQLConnectionString = $cosmosDBConnectionStrings["Primary SQL Connection String"]

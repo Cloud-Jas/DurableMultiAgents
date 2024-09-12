@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>TravelService.CustomerUI</RootNamespace>		
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>				
+		<DockerfileContext>..\TravelService.MultiAgent.Orchestrator</DockerfileContext>
+	  <UserSecretsId>f0cab512-0e1b-4c7a-b826-4e04a0204267</UserSecretsId>
+  </PropertyGroup>
+	<ItemGroup>		
+		<PackageReference Include="Markdig" Version="0.37.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="8.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="8.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid" Version="8.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Metadata" Version="8.0.8" />
+		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.DataGrid.EntityFrameworkAdapter" Version="4.9.3" />
+		<PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.9.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="StackExchange.Redis" Version="2.8.16" />		
+		<PackageReference Include="StatefulReconnection" Version="0.1.0" />
+	</ItemGroup>
+
+
+</Project>

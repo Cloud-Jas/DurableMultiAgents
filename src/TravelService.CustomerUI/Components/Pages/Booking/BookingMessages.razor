@@ -1,0 +1,47 @@
+﻿@using Markdig
+@using Microsoft.FluentUI.AspNetCore.Components
+@using TravelService.CustomerUI.Clients.Backend
+@inject TravelAgentBackendClient Backend
+
+@if (Booking is null)
+{
+   @*  <div class="loading-progress">
+        <FluentProgress />
+    </div> *@
+}
+else
+{
+   <div class="messages">
+      @if (!string.IsNullOrEmpty(Booking?.LongSummary))
+      {
+         <div class="summary">
+            <div class="summary-text">
+               <div>💡</div>
+               <div>
+                  <strong>Summary:</strong>
+                  @Booking.LongSummary
+               </div>
+            </div>
+         </div>
+      }
+
+      @foreach (var message in Booking!.Messages)
+      {
+         <div class="message @(message.IsCustomerMessage ? "customer" : "support")">
+            <div class="message-metadata">
+               <span class="timestamp">@message.CreatedAt.ToShortDateString()</span>
+               <span class="filler">by</span>
+               <span class="sender">@(message.IsCustomerMessage ? Booking.CustomerFullName : "Assistant")</span>
+            </div>
+            <div class="message-text">
+               @((MarkupString)(Markdown.ToHtml(message.MessageText)))
+            </div>
+         </div>
+      }
+   </div>
+}
+
+@code {
+   [Parameter]
+   public BookingDetailsResult? Booking { get; set; }   
+}

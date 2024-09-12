@@ -50,7 +50,7 @@ Email:
 
 #Examples
 
-- User: I want to book a flight ticket
+- User: I want to book a flight Booking
 - ManagerAgent: 
 {
 	"OrchestratorName": "TravelOrchestrator"

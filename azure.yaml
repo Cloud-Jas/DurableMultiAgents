@@ -8,15 +8,19 @@ services:
         project: src\TravelService.MultiAgent.Orchestrator
         host: function
         language: dotnet  
-hooks:
+    TravelService.CustomerUI:
+        project: src\TravelService.CustomerUI
+        host: appservice
+        language: dotnet       
+hooks: 
   postprovision:    
     shell: pwsh
-    run: |
-      # Fetch environment variable values using azd env get-values
-      $envVars = azd env get-values --output json | ConvertFrom-Json
-      # Extract individual environment variables
+    run: |     
+      $envVars = azd env get-values --output json | ConvertFrom-Json      
       $cosmosDBAccountName = $envVars.COSMOSDB_ACCOUNT_NAME
       $resourceGroupName = $envVars.RESOURCE_GROUP_NAME      
-      ./scripts/seedData.ps1 -cosmosDBAccountName $cosmosDBAccountName -resourceGroupName $resourceGroupName
+      $subscriptionId = $envVars.AZURE_SUBSCRIPTION_ID
+      $tenantId = $envVars.AZURE_TENANT_ID
+      ./scripts/seedData.ps1 -cosmosDBAccountName $cosmosDBAccountName -resourceGroupName $resourceGroupName -subscriptionId $subscriptionId -tenantId $tenantId
     continueOnError: false
     interactive: false
