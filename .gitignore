@@ -1,1 +1,3 @@
 .azure
+/scripts/migrationCompleted.flag
+/src/TravelService.CustomerUI/appsettings.Development.json
