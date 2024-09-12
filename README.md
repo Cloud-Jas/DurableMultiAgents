@@ -50,7 +50,7 @@ azd up
 
 # Steps to run the project locally
 
-Update the `local.settings.json` with the below details
+Add the `local.settings.json` in the Azure Durable Function project, with the below details
 
 ```json
 {
