@@ -479,6 +479,14 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
           value: cosmosDBAccount.properties.documentEndpoint
         }
         {
+            name: 'ResourceGroup'
+            value: resourceGroup().name
+        }
+        {
+            name: 'DatabaseAccount'
+            value: cosmosDBAccount.name
+        }
+        {
           name: 'SubscriptionId'
           value: subscription().subscriptionId
         }
