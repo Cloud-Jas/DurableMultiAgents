@@ -5,7 +5,7 @@ namespace TravelService.MultiAgent.Orchestrator.Interfaces
 {
    public interface ICosmosClientService
    {
-      Task StoreChatHistoryAsync(string sessionId, string message, string customerId, string customerName, bool isAssistant);
+      Task StoreChatHistoryAsync(string sessionId, string message, string customerId, string customerName, bool isAssistant, List<string>? agentMessages = null);
       Task<List<SessionSummary>> FetchChatSummariesByUserIdAsync(string userId);
       Task<List<string>> FetchChatHistoryAsync(string sessionId);
       Task<List<ChatRecord>> FetchChatHistoriesAsync(string sessionId, string userId);

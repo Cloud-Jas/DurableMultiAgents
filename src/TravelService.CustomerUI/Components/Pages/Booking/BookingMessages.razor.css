@@ -66,6 +66,16 @@ html.dark-mode .summary-text {
     word-break: break-word;
 }
 
+.assistant-message-text {
+    background: var(--fill-color);
+    color: var(--neutral-foreground-rest);
+    border: calc(var(--stroke-width)* 1px) solid var(--neutral-stroke-layer-rest);
+    border-radius: calc(var(--layer-corner-radius)* 2.5px);
+    box-shadow: var(--elevation-shadow-card-rest);
+    padding: calc(var(--design-unit)* 5px);
+    word-break: break-word;
+}
+
 .message.support {
     align-self: flex-end;
 }

@@ -68,7 +68,7 @@ namespace TravelService.MultiAgent.Orchestrator
 
          var statusQueryGetUri = response.Headers.GetValues("Location").First();
 
-         string responseBody = await PollForCompletion(statusQueryGetUri, logger);        
+         string responseBody = await PollForCompletion(statusQueryGetUri, logger);
 
          return responseBody == "AcceptedResult" ? new AcceptedResult() : new OkObjectResult(responseBody);
       }
@@ -137,6 +137,8 @@ namespace TravelService.MultiAgent.Orchestrator
             return new BadRequestObjectResult("Session-Id or User-Id header is missing.");
          }
 
+         string assistantType = req.Headers.GetValues("Agent-Type")!.FirstOrDefault();
+
          string userQuery = await new StreamReader(req.Body).ReadToEndAsync();
 
          var requestData = JsonConvert.DeserializeObject<RequestData>(userQuery);
@@ -155,13 +157,14 @@ namespace TravelService.MultiAgent.Orchestrator
          requestData.SessionId = sessionId;
          requestData.UserName = userDetails.firstName;
          requestData.UserMailId = userDetails.email;
+         requestData.AssistantType = assistantType;
 
          string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
              nameof(ManagerOrchestrator), requestData);
 
          chatHistory.Add("User: " + requestData.UserQuery);
 
-         await _cosmosClientService.StoreChatHistoryAsync(sessionId, requestData.UserQuery, requestData.UserId, requestData.UserName, false);         
+         await _cosmosClientService.StoreChatHistoryAsync(sessionId, requestData.UserQuery, requestData.UserId, requestData.UserName, false);
 
          return new AcceptedResult();
       }
@@ -196,7 +199,8 @@ namespace TravelService.MultiAgent.Orchestrator
                  cr.MessageId,
                  cr.Timestamp,
                  !cr.IsAssistant,
-                 cr.Message)).ToList()
+                 cr.Message)).ToList(),
+             chatRecords.SelectMany(cr => cr.AgentMessages ?? new List<string>()).ToList()
          );
 
          return new OkObjectResult(bookingDetailsResult);

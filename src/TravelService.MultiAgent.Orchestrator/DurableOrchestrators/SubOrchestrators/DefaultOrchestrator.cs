@@ -3,58 +3,59 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
+using StackExchange.Redis;
 using TravelService.MultiAgent.Orchestrator.Agents;
 using TravelService.MultiAgent.Orchestrator.Contracts;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
 {
-    public class DefaultOrchestrator
-    {
-        private readonly TelemetryClient telemetryClient;
+   public class DefaultOrchestrator
+   {
+      private readonly TelemetryClient telemetryClient;
 
-        public DefaultOrchestrator(TelemetryClient telemetry)
-        {
-            telemetryClient = telemetry;
-        }
+      public DefaultOrchestrator(TelemetryClient telemetry)
+      {
+         telemetryClient = telemetry;
+      }
 
-        [Function(nameof(DefaultOrchestrator))]
-        public async Task<RequestData> RunOrchestrator(
-                           [OrchestrationTrigger] TaskOrchestrationContext context, RequestData requestData, ILogger logger)
-        {
-            telemetryClient.TrackTrace("Orchestrator started.", SeverityLevel.Information);
+      [Function(nameof(DefaultOrchestrator))]
+      public async Task<RequestData> RunOrchestrator(
+                         [OrchestrationTrigger] TaskOrchestrationContext context, RequestData requestData, ILogger logger)
+      {
+         telemetryClient.TrackTrace("Orchestrator started.", SeverityLevel.Information);
 
-            requestData.UserQuery = requestData.IntermediateResponse;
+         requestData.UserQuery = requestData.IntermediateResponse;
 
-            var routeAgents = await context.CallActivityAsync<string>(nameof(ManagerAgent.RouteDefaultAgents), requestData);
+         var routeAgents = await context.CallActivityAsync<string>(nameof(ManagerAgent.RouteDefaultAgents), requestData);
 
-            if (routeAgents == nameof(SemanticAgent.TriggerSemanticAgent))
-            {
+         if (routeAgents == nameof(SemanticAgent.TriggerSemanticAgent))
+         {
 
-                var tasks = new List<Task<RequestData>>();
+            var tasks = new List<Task<RequestData>>();
 
-                // Fan-out requests to multiple agents
+            // Fan-out requests to multiple agents
 
-                var semanticAgentTask = context.CallActivityAsync<string>(nameof(SemanticAgent.TriggerSemanticAgent), requestData);
+            var semanticAgentTask = context.CallActivityAsync<string>(nameof(SemanticAgent.TriggerSemanticAgent), requestData);
 
-                var vectorSearchAgentTask = context.CallActivityAsync<string>(nameof(SemanticAgent.TriggerVectorSemanticAgent), requestData);
+            var vectorSearchAgentTask = context.CallActivityAsync<string>(nameof(SemanticAgent.TriggerVectorSemanticAgent), requestData);
 
-                await Task.WhenAll(semanticAgentTask, vectorSearchAgentTask);
+            await Task.WhenAll(semanticAgentTask, vectorSearchAgentTask);
 
-                requestData.IntermediateResponse = "SemanticAgent: " + semanticAgentTask.Result + "\n" + "VectorSearchAgent: " + vectorSearchAgentTask.Result;
+            requestData.IntermediateResponse = "SemanticAgent: " + semanticAgentTask.Result + "\n" + "VectorSearchAgent: " + vectorSearchAgentTask.Result;
 
-                // Fan-in results to Consolidator Agent
+            requestData.ChatHistory.Add("## SemanticAgent: \n" + semanticAgentTask.Result + "\n" + "## VectorSearchAgent: \n" + vectorSearchAgentTask.Result);
 
-                var consolidatorAgentTask = await context.CallActivityAsync<string>(nameof(ManagerAgent.TriggerConsolidaterAgent), requestData);
-                requestData.IntermediateResponse = consolidatorAgentTask;
+            // Fan-in results to Consolidator Agent
 
-                return requestData;
-            }
-
-            requestData.IntermediateResponse = "No agents found for the given query.";
+            var consolidatorAgentTask = await context.CallActivityAsync<string>(nameof(ManagerAgent.TriggerConsolidaterAgent), requestData);
+            requestData.IntermediateResponse = consolidatorAgentTask;           
 
             return requestData;
-        }
-    }
+         }
+
+         requestData.IntermediateResponse = "No agents found for the given query.";
+
+         return requestData;
+      }
+   }
 }

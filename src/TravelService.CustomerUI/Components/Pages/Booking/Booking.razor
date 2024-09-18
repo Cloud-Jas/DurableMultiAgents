@@ -9,7 +9,7 @@
 @inject IJSRuntime JSRuntime
 
 <div class="Booking">
-   <FluentSplitter BarSize="6" BarHandle="false" Panel1MinSize="100%" Panel2Size="0%" Panel2MinSize="0%" Class="splitter">
+   <FluentSplitter BarSize="6" BarHandle="false" Panel1MinSize="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "100%" : "80%")" Panel2Size="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "0%" : "20%")" Panel2MinSize="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "0%" : "20%")" Class="splitter">
       <Panel1>
          <div class="messages-scroller">
             @if (Bookings is null && string.IsNullOrWhiteSpace(replyText))
@@ -28,16 +28,20 @@
                </div>
             }
             <div class="messages">
-               <BookingMessages Booking="@Bookings" />                
+               <BookingMessages Booking="@Bookings" />
             </div>
          </div>
          <div class="write-message">
             <EditForm EditContext="@editContext" OnValidSubmit="@SendReplyAsync">
                <FluentTextArea @ref="replyTextArea" @bind-Value="@replyText" class="@(!string.IsNullOrWhiteSpace(replyText) ? "modified" : "")" Placeholder="Ask assistant" style="width: 100%; height: 100%;" />
                <div class="actions">
+                  <div>
+                     <FluentSelect TOption="AssistantType" @bind-SelectedOption="@assistantType" Items="@allAssistantTypes" OptionText="@AssistantTypeDisplayText" style="width: 100%;min-width: 12rem;"
+                                   @bind-SelectedOption:after="@MarkTicketTypeModified" />
+                  </div>
                   @if (!isSending)
                   {
-                     <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" IconStart="@sendIcon">Send</FluentButton>
+                     <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" IconStart="@sendIcon" Style="margin-left:10px;">Send</FluentButton>
                   }
                   else
                   {
@@ -47,10 +51,34 @@
             </EditForm>
          </div>
       </Panel1>
+      <Panel2>
+         <div class="assistant">
+            <BookingAssistant Booking="@Bookings" />
+         </div>
+      </Panel2>
    </FluentSplitter>
 </div>
 
 @code {
+   public enum AssistantType
+   {
+      Custom,
+      SingleAI,
+      AutoGen
+   }
+   private void MarkTicketTypeModified()
+   {
+      editContext.NotifyFieldChanged(FieldIdentifier.Create(() => assistantType));
+   }
+   string AssistantTypeDisplayText(AssistantType type) => type switch
+   {
+      AssistantType.Custom => "🛠️ CustomMultiAgent",
+      AssistantType.SingleAI => "🤖 SingleAIAgent",
+      AssistantType.AutoGen => "🧑‍🤝‍🧑🤖 AutoGen(In-Progess)",
+      _ => "Unknown"
+   };
+   readonly AssistantType[] allAssistantTypes = Enum.GetValues<AssistantType>();
+   AssistantType assistantType;
    private readonly Icon sendIcon = new Icons.Regular.Size20.Mail();
    private EditContext editContext;
    private BookingDetailsResult? Bookings;
@@ -70,12 +98,12 @@
 
    protected override void OnInitialized()
    {
-      userId = Configuration["UserId"] ?? "P012";      
+      userId = Configuration["UserId"] ?? "P012";
    }
    public async Task OnChatSelected(string chatId)
    {
       sessionId = chatId;
-      Bookings = await Backend.GetBookingMessagesAsync(chatId, userId);      
+      Bookings = await Backend.GetBookingMessagesAsync(chatId, userId);
       SubscriptionChannel = RedisChannel.Literal($"booking:{sessionId}");
       StateHasChanged();
       await JSRuntime.InvokeVoidAsync("scrollMessageView");
@@ -83,7 +111,7 @@
 
    protected override async Task OnParametersSetAsync()
    {
-      Bookings = null;     
+      Bookings = null;
       SubscriptionChannel = RedisChannel.Literal($"booking:{sessionId}");
    }
    private void ApplySuggestion(string suggestion)
@@ -108,36 +136,42 @@
       }
 
       isSending = true;
-      await Backend.TriggerMultiAgentOrchestrationAsync(replyText, sessionId, userId);
+      await Backend.TriggerMultiAgentOrchestrationAsync(replyText, sessionId, userId, assistantType);
 
-      replyText = null;      
+      replyText = null;
       Bookings = await Backend.GetBookingMessagesAsync(sessionId, userId);
       editContext.MarkAsUnmodified();
       await JSRuntime.InvokeVoidAsync("scrollMessageView");
-      StateHasChanged();      
+      StateHasChanged();
    }
 
    protected override async Task OnRedisNotificationAsync(RedisValue value)
-   {      
-      Bookings = await Backend.GetBookingMessagesAsync(sessionId, userId);    
+   {
+      Bookings = await Backend.GetBookingMessagesAsync(sessionId, userId);
       StateHasChanged();
       await JSRuntime.InvokeVoidAsync("scrollMessageView");
       isSending = false;
-   }  
+   }
    protected override async Task OnAfterRenderAsync(bool firstRender)
    {
-       if(firstRender)
-        await ScrollToChatView();
+      if (firstRender)
+         await ScrollToChatView();
    }
    private async Task ScrollToChatView()
    {
       await JSRuntime.InvokeVoidAsync("eval", @"
                 window.scrollMessageView = function() {
                      var messages = document.querySelectorAll('.message-text');
+                     var assistantMessages = document.querySelectorAll('.assistant-message-text');
                         if (messages.length > 0) {
                             var lastMessage = messages[messages.length - 1];
                             lastMessage.scrollIntoView();
-                        }}");
+                        }
+                        if (assistantMessages.length > 0) {
+                            var lastMessage = assistantMessages[assistantMessages.length - 1];
+                            lastMessage.scrollIntoView();
+                        }
+}");
    }
 
 }

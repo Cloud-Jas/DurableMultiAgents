@@ -8,6 +8,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.PromptTemplates.Liquid;
 using Microsoft.SemanticKernel.Prompty;
+using TravelService.MultiAgent.Orchestrator.Agents.Booking.Plugins;
 using TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins;
 using TravelService.MultiAgent.Orchestrator.Agents.Weather.Plugins;
 using TravelService.MultiAgent.Orchestrator.Contracts;
@@ -18,9 +19,9 @@ using TravelService.Plugins.Common;
 #pragma warning disable SKEXP0040 
 namespace TravelService.MultiAgent.Orchestrator.Agents
 {
-   public class WeatherAgent
+   public class SingleAIAgent
    {
-      private readonly ILogger<WeatherAgent> _logger;
+      private readonly ILogger<SingleAIAgent> _logger;
       private readonly Kernel _kernel;
       private readonly IPromptyService _prompty;
       private readonly IKernelService _kernelService;
@@ -28,7 +29,7 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
       private readonly ICosmosClientService _cosmosClientService;
       private readonly IServiceProvider _serviceProvider;
 
-      public WeatherAgent(ILogger<WeatherAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider)
+      public SingleAIAgent(ILogger<SingleAIAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider)
       {
          _logger = logger;
          _kernel = kernel;
@@ -39,19 +40,21 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
          _serviceProvider = serviceProvider;
       }
 
-      [Function(nameof(TriggerWeatherAgent))]
-      public async Task<ChatMessageContent> TriggerWeatherAgent([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
+      [Function(nameof(TriggerSingleAIAgent))]
+      public async Task<ChatMessageContent> TriggerSingleAIAgent([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
       {
          try
          {
             _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
+            _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new FlightPlugin(_serviceProvider)));
             _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new WeatherPlugin(_serviceProvider)));
+            _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new BookingPlugin(_serviceProvider)));
 
-            var prompt = await _prompty.RenderPromptAsync(Path.Combine("Agents", "Weather", "WeatherAgent.prompty"), _kernel, new KernelArguments
+            var prompt = await _prompty.RenderPromptAsync(Path.Combine("Agents", "SingleAI", "SingleAIAgent.prompty"), _kernel, new KernelArguments
                 {
                     { "context", requestData.UserQuery },
                     { "history", requestData.ChatHistory },
-                     { "userId",requestData.UserId },
+                    { "userId",requestData.UserId },
                     { "userName", requestData.UserName},
                     { "email", requestData.UserMailId }
                 });
@@ -62,8 +65,8 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
          }
          catch (Exception ex)
          {
-            _logger.LogError(ex, "Error occurred in WeatherAgent.");
-            return new ChatMessageContent(AuthorRole.Assistant, "Weather information not available");
+            _logger.LogError(ex, "Error occurred in FlightAgent.");
+            throw;
          }
       }
    }

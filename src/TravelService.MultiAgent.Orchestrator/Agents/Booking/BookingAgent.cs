@@ -41,7 +41,7 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
                 
                 var prompt = await _prompty.RenderPromptAsync(Path.Combine("Agents", "Booking", "BookingAgent.prompty"), _kernel, new KernelArguments
                 {
-                    { "context", requestData.IntermediateResponse },
+                    { "context", requestData.UserQuery },
                     { "history", requestData.ChatHistory },
                     { "userId",requestData.UserId },
                     { "userName", requestData.UserName},

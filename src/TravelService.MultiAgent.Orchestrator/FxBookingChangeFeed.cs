@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Newtonsoft.Json;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 
 #pragma warning disable SKEXP0010
 #pragma warning disable SKEXP0001

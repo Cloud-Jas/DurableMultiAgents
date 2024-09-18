@@ -49,9 +49,10 @@ namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
 
                telemetryClient.TrackTrace("Sub Orchestration completed: " + managerResponse, SeverityLevel.Information);
                response = subOrchestratorResponse.IntermediateResponse;
+               requestData.ChatHistory = subOrchestratorResponse.ChatHistory;
             }
 
-            await _cosmosClientService.StoreChatHistoryAsync(requestData.SessionId, response, requestData.UserId, requestData.UserName, true);
+            await _cosmosClientService.StoreChatHistoryAsync(requestData.SessionId, response, requestData.UserId, requestData.UserName, true, requestData.ChatHistory);
 
             await redisConnection.GetSubscriber().PublishAsync(
            RedisChannel.Literal($"booking:{requestData.SessionId}"), "Updated");

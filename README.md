@@ -27,6 +27,8 @@ Durable Multi Agents is an attempt to make use of Azure Durable Functions with S
 - High scalability of each agents
 - Managed Idenitty connectivity to Azure OpenAI and Azure Cosmos DB services
 - Provided seed data project for you to get started
+- Switch between Custom/SingleAI/AutoGen based Multi-Agents on the fly.
+- Monitoring agent's responses in the side pane of the application
 
 ## Prerequisites
 

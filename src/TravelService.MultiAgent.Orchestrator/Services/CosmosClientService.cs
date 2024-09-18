@@ -258,7 +258,7 @@ namespace TravelService.MultiAgent.Orchestrator.Services
          return sessionSummaries;
       }
 
-      public async Task StoreChatHistoryAsync(string sessionId, string message, string customerId, string customerName, bool isAssistant)
+      public async Task StoreChatHistoryAsync(string sessionId, string message, string customerId, string customerName, bool isAssistant, List<string>? agentMessages = null)
       {
          _container = _cosmosClient.GetContainer(databaseId, "ChatHistory");
 
@@ -272,6 +272,9 @@ namespace TravelService.MultiAgent.Orchestrator.Services
             Message = message,
             Timestamp = DateTime.UtcNow
          };
+
+         if(agentMessages != null)
+            chatRecord.AgentMessages = agentMessages;
 
          await _container.CreateItemAsync(chatRecord, new PartitionKey(sessionId));
       }

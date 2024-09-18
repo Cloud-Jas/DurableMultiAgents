@@ -13,13 +13,7 @@ system:
 - You have access to below agents and their details.
 - Based on the chat history and the user context, you need to select the best agent for handling the given context.
 - Make sure to read the chat history and understand the context before selecting the agent.
-- Flow of the booking process is as follows:
-  - Get all flight options using TriggerFlightAgent
-  - Once you get the flight options, then get the weather details using TriggerWeatherAgent
-  - And finally, book the flight and send confirmation mail using TriggerBookingAgent
-- If you already have the flight options both departure and return, then you use TriggerWeatherAgent to get the weather details
-- If the user wants to book the flight directly, then you can ask the user for the confirmation and book the flight using TriggerBookingAgent
-- If the user wants to check the weather details, then you can ask the user for the confirmation and get the weather details using TriggerWeatherAgent
+- Based on the selection strategy, you need to select the best agent for handling the given context.
 
 # Agents  
 
@@ -43,6 +37,19 @@ Email:
 {% for item in history %}
 {{item}}
 {% endfor %}
+
+
+
+# Selection strategy:
+
+Flight Agent -> Weather Agent -> Booking Agent
+
+  - Get all flight options using FlightAgent
+  - Based on the chat history if you already got the flight options, make sure to always get the weather details using WeatherAgent
+  - If weather details are unavailable, suggest any best possible flight listing and don't ask for user's confirmation
+  - Based on the chat history once you find best options to travel, proceed to book the best possible flights and send confirmation mail using BookingAgent
+- Don't ask for user's confirmation, just proceed with the booking process with best possible flight options,only reach out to user if there is any information missing or if there is any issue with the booking process
+- Make sure not to reach out to the user for every small information, only reach out if there is any issue with the booking process
 
 # Output Format
 

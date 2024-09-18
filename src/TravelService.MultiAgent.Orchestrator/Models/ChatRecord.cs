@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Identity.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,8 +24,10 @@ namespace TravelService.MultiAgent.Orchestrator.Models
       public string Message { get; set; }
       [JsonProperty("timestamp")]
       public DateTime Timestamp { get; set; }
+      [JsonProperty("agentMessages")]
+      public List<string>? AgentMessages { get; set; }
    }
-   public record BookingDetailsResult(string SessionId, string CustomerFullName, string? LongSummary, ICollection<BookingDetailsResultMessage> Messages);
+   public record BookingDetailsResult(string SessionId, string CustomerFullName, string? LongSummary, ICollection<BookingDetailsResultMessage> Messages, ICollection<string>? AgentMessages);
 
    public record BookingDetailsResultMessage(string MessageId, DateTime CreatedAt, bool IsCustomerMessage, string MessageText);
    public class SessionSummary

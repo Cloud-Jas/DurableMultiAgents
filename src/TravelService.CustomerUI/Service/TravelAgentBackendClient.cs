@@ -2,13 +2,14 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using static TravelService.CustomerUI.Components.Layout.MainLayout;
+using static TravelService.CustomerUI.Components.Pages.Booking.Booking;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace TravelService.CustomerUI.Clients.Backend;
 
 public class TravelAgentBackendClient(HttpClient http)
 {
-   public async Task<string> TriggerMultiAgentOrchestrationAsync(string request, string sessionId, string userId)
+   public async Task<string> TriggerMultiAgentOrchestrationAsync(string request, string sessionId, string userId,AssistantType assistantType)
    {
       var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/api/ChatAssistant")
       {
@@ -16,12 +17,12 @@ public class TravelAgentBackendClient(HttpClient http)
       };
       httpRequest.Headers.Add("Session-Id", sessionId);
       httpRequest.Headers.Add("User-Id", userId);
-
+      httpRequest.Headers.Add("Agent-Type", assistantType.ToString());
       var response = await http.SendAsync(httpRequest);
       return await response.Content.ReadAsStringAsync();
    }
 
-   public async Task<BookingDetailsResult> GetBookingMessagesAsync(string sessionId,string userId)
+   public async Task<BookingDetailsResult> GetBookingMessagesAsync(string sessionId, string userId)
    {
       var httpRequest = new HttpRequestMessage(HttpMethod.Get, $"/api/chat/{sessionId}")
       {
@@ -54,6 +55,6 @@ public class TravelAgentBackendClient(HttpClient http)
    }
 }
 
-public record BookingDetailsResult(string SessionId, string CustomerFullName, string? LongSummary, ICollection<BookingDetailsResultMessage> Messages);
+public record BookingDetailsResult(string SessionId, string CustomerFullName, string? LongSummary, ICollection<BookingDetailsResultMessage> Messages, ICollection<string> AgentMessages);
 
 public record BookingDetailsResultMessage(string MessageId, DateTime CreatedAt, bool IsCustomerMessage, string MessageText);

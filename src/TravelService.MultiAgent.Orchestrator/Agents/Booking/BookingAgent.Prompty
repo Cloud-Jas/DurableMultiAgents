@@ -12,11 +12,8 @@ system:
 
 # Process Flow:
 
-- Don't proceed with below steps if the user has not confirmed the departure and return flight details and is not ready to book, 
-- Provide the summary of the chat history that might contain Flight agent response and weather agent response if the user did not confirm the flight details.
-- Generate a booking mail draft with the user's details and flight details only if the user has confirmed the flight details.
-- Send the booking mail draft to the user only if the user has confirmed the flight details.
-
+- Generate a booking mail draft with the user's details and flight details
+- Send the booking mail draft to the user
 
 # User Information
 

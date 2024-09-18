@@ -12,6 +12,12 @@ using Azure;
 using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
+using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
+using Microsoft.SemanticKernel.ChatCompletion;
+using System;
+using TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins;
+using TravelService.MultiAgent.Orchestrator.Agents.Weather.Plugins;
+using TravelService.MultiAgent.Orchestrator.Agents.Booking.Plugins;
 
 #pragma warning disable SKEXP0010
 
@@ -55,7 +61,14 @@ var host = new HostBuilder()
                endpoint: openaiEndpoint
            );
        });
-
+       services.AddSingleton<IChatCompletionService, AzureOpenAIChatCompletionService>(pprovider =>
+       {
+          return new AzureOpenAIChatCompletionService(
+               deploymentName: openaiChatCompletionDeploymentName,
+               credentials: new DefaultAzureCredential(credentialOptions),
+               endpoint: openaiEndpoint
+           );
+       });
        services.AddSingleton<AzureOpenAITextEmbeddingGenerationService>(provider =>
        {
           return new AzureOpenAITextEmbeddingGenerationService(deploymentName: openaiTextEmbeddingGenerationDeploymentName,
@@ -77,6 +90,10 @@ var host = new HostBuilder()
        services.AddScoped<Kernel>(provider =>
        {
           var builder = Kernel.CreateBuilder();
+
+          builder.AddAzureOpenAIChatCompletion(deploymentName: openaiChatCompletionDeploymentName,
+               credentials: new DefaultAzureCredential(credentialOptions),
+               endpoint: openaiEndpoint);
           return builder.Build();
        });
        services.AddHttpContextAccessor();
