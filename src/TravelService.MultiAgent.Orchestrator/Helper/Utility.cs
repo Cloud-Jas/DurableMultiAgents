@@ -55,7 +55,14 @@ namespace TravelService.MultiAgent.Orchestrator.Helper
             return orchestrators;
 
         }
-        public static Array GetDefaultAgents()
+
+      public static List<string> GetAgentNames()
+      {         
+         return new List<string> { "FlightAgent", "WeatherAgent", "BookingAgent", "SemanticAgent", "VectorSearchAgent" };
+      }
+
+
+      public static Array GetDefaultAgents()
         {
             var orchestrators = new[] {
                 new { name = "TriggerSemanticAgent", description = "Agent for handling semantic queries related to booking history"},

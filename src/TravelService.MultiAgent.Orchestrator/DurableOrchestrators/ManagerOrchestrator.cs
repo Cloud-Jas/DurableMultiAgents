@@ -3,11 +3,13 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel.Agents;
 using StackExchange.Redis;
 using TravelService.MultiAgent.Orchestrator.Agents;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.Helper;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
+using System.Linq;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
@@ -35,7 +37,7 @@ namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
 
             var managerResponse = await context.CallActivityAsync<string>(nameof(ManagerAgent.RouteOrchestrators), requestData);
 
-            requestData.ChatHistory.Add("ManagerAgent: " + managerResponse);
+            requestData.ChatHistory.Add("## ManagerAgent: \n" + managerResponse);
 
             requestData.IntermediateResponse = requestData.UserQuery;
 
@@ -52,7 +54,13 @@ namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
                requestData.ChatHistory = subOrchestratorResponse.ChatHistory;
             }
 
-            await _cosmosClientService.StoreChatHistoryAsync(requestData.SessionId, response, requestData.UserId, requestData.UserName, true, requestData.ChatHistory);
+            var agentNames= Utility.GetAgentNames();
+
+            var agentChatHistory = requestData.ChatHistory
+                .Where(chat => chat.StartsWith("##") && agentNames.Any(agent => chat.Contains(agent)))
+                .ToList();            
+
+            await _cosmosClientService.StoreChatHistoryAsync(requestData.SessionId, response, requestData.UserId, requestData.UserName, true, agentChatHistory);
 
             await redisConnection.GetSubscriber().PublishAsync(
            RedisChannel.Literal($"booking:{requestData.SessionId}"), "Updated");
