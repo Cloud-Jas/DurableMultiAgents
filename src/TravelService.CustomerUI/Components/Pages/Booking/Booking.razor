@@ -9,7 +9,7 @@
 @inject IJSRuntime JSRuntime
 
 <div class="Booking">
-   <FluentSplitter BarSize="6" BarHandle="false" Panel1MinSize="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "100%" : "80%")" Panel2Size="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "0%" : "20%")" Panel2MinSize="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "0%" : "20%")" Class="splitter">
+   <FluentSplitter BarSize="6" BarHandle="false" Panel1MinSize="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "100%" : "65%")" Panel2Size="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "0%" : "35%")" Panel2MinSize="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "0%" : "35%")" Class="splitter">
       <Panel1>
          <div class="messages-scroller">
             @if (Bookings is null && string.IsNullOrWhiteSpace(replyText))
