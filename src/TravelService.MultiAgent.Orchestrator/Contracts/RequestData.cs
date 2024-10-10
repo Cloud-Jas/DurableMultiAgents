@@ -13,7 +13,7 @@ namespace TravelService.MultiAgent.Orchestrator.Contracts
       public string SessionId { get; set; }
       public string UserId { get; set; }
       public string? AssistantType { get; set; }
-
+      public string? FunctionCallId { get; set; }
       public string IntermediateResponse { get; set; }
 
       public void Set(RequestData? requestData)

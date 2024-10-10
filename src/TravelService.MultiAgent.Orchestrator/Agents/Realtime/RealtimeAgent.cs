@@ -32,9 +32,9 @@ using Agent = TravelService.MultiAgent.Orchestrator.Contracts.Agent;
 #pragma warning disable SKEXP0001
 namespace TravelService.MultiAgent.Orchestrator.Agents
 {
-   public class AutoGenAgent
+   public class RealtimeAgent
    {
-      private readonly ILogger<AutoGenAgent> _logger;
+      private readonly ILogger<RealtimeAgent> _logger;
       private readonly Kernel _kernel;
       private readonly IPromptyService _prompty;
       private readonly IKernelService _kernelService;
@@ -42,7 +42,7 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
       private readonly ICosmosClientService _cosmosClientService;
       private readonly IServiceProvider _serviceProvider;
 
-      public AutoGenAgent(ILogger<AutoGenAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider)
+      public RealtimeAgent(ILogger<RealtimeAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider)
       {
          _logger = logger;
          _kernel = kernel;
@@ -130,8 +130,8 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
          return agent;
       }
 
-      [Microsoft.Azure.Functions.Worker.Function(nameof(TriggerAutoGenAgent))]
-      public async Task<string> TriggerAutoGenAgent([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
+      [Microsoft.Azure.Functions.Worker.Function(nameof(TriggerRealTimeAgent))]
+      public async Task<string> TriggerRealTimeAgent([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
       {
          try
          {

@@ -11,6 +11,7 @@ using TravelService.MultiAgent.Orchestrator.Helper;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using System.Linq;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
+using TravelService.MultiAgent.Orchestrator.Models;
 
 namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
 {
@@ -54,17 +55,24 @@ namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
                requestData.ChatHistory = subOrchestratorResponse.ChatHistory;
             }
 
-            var agentNames= Utility.GetAgentNames();
+            var agentNames = Utility.GetAgentNames();
 
             var agentChatHistory = requestData.ChatHistory
                 .Where(chat => chat.StartsWith("##") && agentNames.Any(agent => chat.Contains(agent)))
-                .ToList();            
+                .ToList();
 
             await _cosmosClientService.StoreChatHistoryAsync(requestData.SessionId, response, requestData.UserId, requestData.UserName, true, agentChatHistory);
 
-            await redisConnection.GetSubscriber().PublishAsync(
-           RedisChannel.Literal($"booking:{requestData.SessionId}"), "Updated");
-
+            if (requestData.AssistantType.Equals("Realtime"))
+            {
+               await redisConnection.GetSubscriber().PublishAsync(
+               RedisChannel.Literal($"booking:{requestData.SessionId}"), requestData.FunctionCallId + "~" + response);
+            }
+            else
+            {
+               await redisConnection.GetSubscriber().PublishAsync(
+              RedisChannel.Literal($"booking:{requestData.SessionId}"), "Updated");
+            }
             return response;
          }
          catch (Exception ex)

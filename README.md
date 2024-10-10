@@ -18,6 +18,18 @@
 
 Durable Multi Agents is an attempt to make use of Azure Durable Functions with Semantic Kernel to build Multi-Agents workflows.
 
+<b style="color:orange">
+
+```quote
+Disclaimer: Realtime Agent only works in local environment, will be updated soon to work in live URL
+```
+
+</b>
+
+# High level components
+
+![Image description](docs/images/azuredurablefunction.png)
+
 # Highlights
 
 - Proposed solution have implemented different patterns with Multi-Agents , some of them are 

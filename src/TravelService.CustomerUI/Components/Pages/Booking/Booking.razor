@@ -3,16 +3,21 @@
 @inject IConfiguration Configuration
 @using Microsoft.FluentUI.AspNetCore.Components
 @using StackExchange.Redis
+@using System.Text.Json
 @using TravelService.CustomerUI.Clients.Backend
 @using TravelService.CustomerUI.Components.Layout
+@using NAudio.Wave;
+@using OpenAI;
+@using OpenAI.RealtimeConversation;
 @inject TravelAgentBackendClient Backend
+@inject RealtimeConversationBackendClient RealtimeBackend;
 @inject IJSRuntime JSRuntime
 
 <div class="Booking">
    <FluentSplitter BarSize="6" BarHandle="false" Panel1MinSize="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "100%" : "65%")" Panel2Size="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "0%" : "35%")" Panel2MinSize="@(Bookings is null || (Bookings is not null && Bookings.AgentMessages.Count < 1) ? "0%" : "35%")" Class="splitter">
       <Panel1>
          <div class="messages-scroller">
-            @if (Bookings is null && string.IsNullOrWhiteSpace(replyText))
+            @if (Bookings is null && string.IsNullOrWhiteSpace(replyText) && !isRealtime)
             {
                <div class="suggestions">
                   <p>💡Suggestions: </p>
@@ -27,13 +32,31 @@
                   </div>
                </div>
             }
+            @if (isRealtime)
+            {
+               <div class="summary">
+                  <div class="summary-text">
+                     <div>💡</div>
+                     <div>
+                        <strong>RealTimeAgent:</strong>
+                        You can interact with the agent by speaking. Click on the mic icon to start speaking.
+                     </div>
+                  </div>
+               </div>
+            }
             <div class="messages">
                <BookingMessages Booking="@Bookings" />
             </div>
          </div>
          <div class="write-message">
             <EditForm EditContext="@editContext" OnValidSubmit="@SendReplyAsync">
-               <FluentTextArea @ref="replyTextArea" @bind-Value="@replyText" class="@(!string.IsNullOrWhiteSpace(replyText) ? "modified" : "")" Placeholder="Ask assistant" style="width: 100%; height: 100%;" />
+               @if (!isRealtime)
+               {
+                  <FluentTextArea @ref="replyTextArea" @bind-Value="@replyText" class="@(!string.IsNullOrWhiteSpace(replyText) ? "modified" : "")" Placeholder="Ask assistant" style="width: 100%; height: 100%;" />
+               }
+               else
+               {
+               }
                <div class="actions">
                   <div>
                      <FluentSelect TOption="AssistantType" @bind-SelectedOption="@assistantType" Items="@allAssistantTypes" OptionText="@AssistantTypeDisplayText" style="width: 100%;min-width: 12rem;"
@@ -41,7 +64,20 @@
                   </div>
                   @if (!isSending)
                   {
-                     <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" IconStart="@sendIcon" Style="margin-left:10px;">Send</FluentButton>
+                     @if (isRealtime)
+                     {
+                        <FluentButton @onclick="StartRecording" Type="ButtonType.Submit" Appearance="Appearance.Stealth" IconStart="@sendIconRealTime" Style="margin-left:10px;">Speak</FluentButton>
+                     }
+                     else
+                     {
+                        <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent" IconStart="@sendIcon" Style="margin-left:10px;">Send</FluentButton>
+                     }
+                     @if (isRealtime && isRecording)
+                     {
+                        <FluentButton @onclick="StopRecording" Type="ButtonType.Submit" Appearance="Appearance.Stealth" IconStart="@stopIconRealTime" Style="margin-left:10px;">
+                           Stop
+                        </FluentButton>
+                     }
                   }
                   else
                   {
@@ -60,26 +96,41 @@
 </div>
 
 @code {
+#pragma warning disable OPENAI002
    public enum AssistantType
    {
       Custom,
       SingleAI,
-      AutoGen
+      AutoGen,
+      RealTime
    }
    private void MarkTicketTypeModified()
    {
+      if (assistantType == AssistantType.RealTime)
+      {
+         isRealtime = true;
+      }
+      else
+      {
+         isRealtime = false;
+      }
+      StateHasChanged();
       editContext.NotifyFieldChanged(FieldIdentifier.Create(() => assistantType));
    }
    string AssistantTypeDisplayText(AssistantType type) => type switch
    {
       AssistantType.Custom => "🛠️ CustomMultiAgent",
       AssistantType.SingleAI => "🤖 SingleAIAgent",
-      AssistantType.AutoGen => "🧑‍🤝‍🧑🤖 AutoGen(In-Progess)",
+      AssistantType.AutoGen => "🧑‍🤝‍🧑🤖 AutoGenAgent",
+      AssistantType.RealTime => "🕒 RealTimeAgent(In-Progress)",
       _ => "Unknown"
    };
    readonly AssistantType[] allAssistantTypes = Enum.GetValues<AssistantType>();
    AssistantType assistantType;
    private readonly Icon sendIcon = new Icons.Regular.Size20.Mail();
+   private readonly Icon sendIconRealTime = new Icons.Regular.Size20.Mic();
+   private readonly Icon stopIconRealTime = new Icons.Regular.Size20.Stop();
+   private DotNetObjectReference<Booking>? dotNetRef;
    private EditContext editContext;
    private BookingDetailsResult? Bookings;
    private string? replyText;
@@ -87,6 +138,11 @@
    private string sessionId = Guid.NewGuid().ToString();
    private string userId;
    private bool isSending;
+   private bool isRealtime = false;
+   private bool isRecording = false;
+   private MicrophoneAudioStream? micStream;
+   private CancellationTokenSource? cancellationTokenSource;
+   private RealtimeConversationSession realtimeConversationSession;
    string[] suggestions = ["Can you help me plan a trip from chennai to goa on Sept 10th 2024 for 5 days?", "What you can help me with?", "Can you list my past bookings?"];
    [Parameter]
    public int BookingId { get; set; }
@@ -99,6 +155,7 @@
    protected override void OnInitialized()
    {
       userId = Configuration["UserId"] ?? "P012";
+      dotNetRef = DotNetObjectReference.Create(this);
    }
    public async Task OnChatSelected(string chatId)
    {
@@ -147,6 +204,15 @@
 
    protected override async Task OnRedisNotificationAsync(RedisValue value)
    {
+      string message = value.ToString();
+      if (message != "Updated")
+      {
+         var splitMessage = message.Split("~");
+         var functionCallId = splitMessage[0];
+         var messageText = splitMessage[1];
+         await RealtimeBackend.UpdateConversationAsync(functionCallId, messageText);
+      }
+
       Bookings = await Backend.GetBookingMessagesAsync(sessionId, userId);
       StateHasChanged();
       await JSRuntime.InvokeVoidAsync("scrollMessageView");
@@ -157,6 +223,20 @@
       if (firstRender)
          await ScrollToChatView();
    }
+
+   private async Task StartRecording()
+   {
+      isRecording = true;
+      await RealtimeBackend.StartConversationAsync(sessionId, userId);
+   }
+
+   private async Task StopRecording()
+   {
+      var stream = RealtimeBackend.GetMicrophoneAndSession();
+      isRecording = false;
+      await RealtimeBackend.StopConversationAsync(stream.Item1, stream.Item2);
+   }
+
    private async Task ScrollToChatView()
    {
       await JSRuntime.InvokeVoidAsync("eval", @"

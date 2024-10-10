@@ -24,6 +24,11 @@ namespace TravelService.MultiAgent.Orchestrator.Services
       {
          var promptConfig = KernelFunctionPrompty.ToPromptTemplateConfig(File.ReadAllText(filePath));
 
+         promptConfig.AddExecutionSettings(new OpenAIPromptExecutionSettings()
+         {
+            ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+         });
+
          var promptTemplateFactory = new LiquidPromptTemplateFactory();
 
          var promptTemplate = promptTemplateFactory.Create(promptConfig);

@@ -13,13 +13,14 @@ param location string
 param travelServiceMultiAgentOrchestratorDefinition object
 
 @description('Location for the OpenAI resource group')
-@allowed(['australiaeast', 'canadaeast', 'francecentral', 'southindia', 'uksouth', 'swedencentral', 'westus', 'eastus'])
+@allowed(['australiaeast', 'canadaeast', 'francecentral', 'southindia', 'uksouth', 'swedencentral', 'westus', 'eastus', 'eastus2'])
 @metadata({
   azd: {
     type: 'location'
   }
 })
 param openAILocation string
+param realtimeOpenAILocation string
 
 param openAISku string = 'S0'
 
@@ -29,6 +30,9 @@ param chatGptModelVersion string = '2024-05-13'
 param embeddingDeploymentName string = 'embedding'
 param embeddingDeploymentCapacity int = 120
 param embeddingModelName string = 'text-embedding-ada-002'
+param realtimeDeploymentName string = 'realtime'
+param realtimeModelName string = 'gpt-4o-realtime-preview'
+param realtimeModelVersion string = '2024-10-01'
 
 
 var tags = {
@@ -118,10 +122,27 @@ module travelServiceCustomerUI './app/TravelService.CustomerUI.bicep' = {
     name: '${abbrs.webSites}${resourceToken}'
     location: location
     tags: tags    
+    identityName: '${abbrs.managedIdentityUserAssignedIdentities}travelserviceui-${resourceToken}'
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     redisCacheName: travelServiceMultiAgentOrchestrator.outputs.redisCacheName
     functionAppName: travelServiceMultiAgentOrchestrator.outputs.functionAppName
-    appServicePlanName: 'asp-${abbrs.webSites}${resourceToken}'    
+    appServicePlanName: 'asp-${abbrs.webSites}${resourceToken}'
+    realtimeDeploymentName: realtimeDeploymentName
+    realtimeOpenAILocation: realtimeOpenAILocation
+    openAiSkuName: openAISku
+    deployments: [
+      {
+        name: realtimeDeploymentName
+        model: {
+          format: 'OpenAI'
+          name: realtimeModelName
+          version: realtimeModelVersion
+        }
+        scaleSettings: {
+          scaleType: 'Standard'
+        }
+      }      
+    ] 
   }
   scope: rg
 }

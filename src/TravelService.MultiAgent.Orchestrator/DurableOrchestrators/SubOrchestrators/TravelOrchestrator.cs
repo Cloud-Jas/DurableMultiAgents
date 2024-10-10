@@ -26,7 +26,7 @@ namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
       {
          telemetryClient.TrackTrace("Orchestrator started.", SeverityLevel.Information);
 
-         if (string.IsNullOrWhiteSpace(requestData.AssistantType) || requestData.AssistantType.Equals("Custom"))
+         if (string.IsNullOrWhiteSpace(requestData.AssistantType) || requestData.AssistantType.Equals("Custom") || requestData.AssistantType.Equals("Realtime"))
          {
             var routeAgents = await context.CallActivityAsync<string>(nameof(ManagerAgent.RouteAgents), requestData);
 
@@ -67,9 +67,7 @@ namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
          }
          else if (requestData.AssistantType.Equals("AutoGen"))
          {
-            var autoGenAgentResponse = await context.CallActivityAsync<string>(nameof(AutoGenAgent.TriggerAutoGenAgent), requestData);
-
-            autoGenAgentResponse = "Work in Progress!!"; // Hardcoded response
+            var autoGenAgentResponse = await context.CallActivityAsync<string>(nameof(AutoGenAgent.TriggerAutoGenAgent), requestData);           
 
             requestData.ChatHistory.Add("## AutoGenAgent: \n" + autoGenAgentResponse);
 

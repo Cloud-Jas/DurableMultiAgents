@@ -1,3 +1,4 @@
+using Microsoft.ApplicationInsights.WindowsServer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -5,21 +6,23 @@ using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using StackExchange.Redis;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.DurableOrchestrators;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Models;
+#pragma warning disable OPENAI002
 
 namespace TravelService.MultiAgent.Orchestrator
 {
    public class FxTravelService
    {
       private readonly ICosmosClientService _cosmosClientService;
-      private readonly INL2SQLService _nL2SQLService;
+      private readonly INL2SQLService _nL2SQLService;      
       public FxTravelService(ICosmosClientService cosmosClientService, INL2SQLService nL2SQLService)
       {
          _cosmosClientService = cosmosClientService;
-         _nL2SQLService = nL2SQLService;
+         _nL2SQLService = nL2SQLService;         
       }
 
       [Function("MultiAgentOrchestration")]
@@ -118,6 +121,55 @@ namespace TravelService.MultiAgent.Orchestrator
          }
 
          return result["output"]?.ToString();
+      }
+
+      [Function("ChatRealTimeAssistant")]
+      public async Task<IActionResult> ChatRealTimeAssistant(
+          [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "realtime")] HttpRequestData req,
+          [DurableClient] DurableTaskClient client,
+          FunctionContext executionContext)
+      {
+         ILogger logger = executionContext.GetLogger("ChatRealTimeAssistant");
+
+         string sessionId = req.Headers.GetValues("Session-Id")!.FirstOrDefault();
+
+         string userId = req.Headers.GetValues("User-Id")!.FirstOrDefault();
+
+         if (string.IsNullOrEmpty(sessionId) || string.IsNullOrEmpty(userId))
+         {
+            return new BadRequestObjectResult("Session-Id or User-Id header is missing.");
+         }
+
+         string assistantType = req.Headers.GetValues("Agent-Type")!.FirstOrDefault();
+
+         string request = await new StreamReader(req.Body).ReadToEndAsync();
+
+         var realtimeRequest = JsonConvert.DeserializeObject<RealtimeRequest>(request);         
+
+         if (realtimeRequest.SessionId == null || realtimeRequest.FunctionCallId == null)
+         {
+            return new BadRequestObjectResult("Invalid session");
+         }
+
+         var userDetails = await _cosmosClientService.FetchUserDetailsAsync(userId);
+
+         var chatHistory = await _cosmosClientService.FetchChatHistoryAsync(sessionId);
+
+         var requestData = new RequestData();
+
+         requestData.ChatHistory = chatHistory;
+         requestData.UserId = userId;
+         requestData.FunctionCallId = realtimeRequest.FunctionCallId;
+         requestData.UserQuery = realtimeRequest.UserQuery;
+         requestData.SessionId = sessionId;
+         requestData.UserName = userDetails.firstName;
+         requestData.UserMailId = userDetails.email;
+         requestData.AssistantType = assistantType;
+
+         string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
+             nameof(ManagerOrchestrator), requestData);       
+
+         return new AcceptedResult();
       }
 
       [Function("ChatAssistant")]
