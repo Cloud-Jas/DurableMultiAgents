@@ -10,7 +10,7 @@
 </p>
 
 ![Banner Image](docs/images/banner.png)
-![Image description](docs/images/screenshot.png)]
+![Image description](docs/images/screenshot.png)
 
 # Architecture
 
