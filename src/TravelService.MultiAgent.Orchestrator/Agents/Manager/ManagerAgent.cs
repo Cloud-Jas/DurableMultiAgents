@@ -6,30 +6,35 @@ using Newtonsoft.Json;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Services;
+using TravelService.MultiAgent.Orchestrator.TracingDataHandlers;
 using TravelService.Plugins.Common;
 
 namespace TravelService.MultiAgent.Orchestrator.Agents
 {
-    public class ManagerAgent
-    {
-        private readonly ILogger<ManagerAgent> _logger;
-        private readonly Kernel _kernel;
-        private readonly IPromptyService _prompty;
-        private readonly IKernelService _kernelService;
-        private readonly ICosmosClientService _cosmosClientService;
+   public class ManagerAgent
+   {
+      private readonly ILogger<ManagerAgent> _logger;
+      private readonly Kernel _kernel;
+      private readonly IPromptyService _prompty;
+      private readonly IKernelService _kernelService;
+      private readonly ICosmosClientService _cosmosClientService;
+      private readonly IActivityTriggerTracingHandler _activityTriggerTracingHandler;
 
-        public ManagerAgent(ILogger<ManagerAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, ICosmosClientService cosmosClientService)
-        {
-            _logger = logger;
-            _kernel = kernel;
-            _prompty = prompty;
-            _kernelService = kernelService;
-            _cosmosClientService = cosmosClientService;
-        }
+      public ManagerAgent(ILogger<ManagerAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, ICosmosClientService cosmosClientService, IActivityTriggerTracingHandler activityTriggerTracingHandler)
+      {
+         _logger = logger;
+         _kernel = kernel;
+         _prompty = prompty;
+         _kernelService = kernelService;
+         _cosmosClientService = cosmosClientService;
+         _activityTriggerTracingHandler = activityTriggerTracingHandler;
+      }
 
-        [Function(nameof(RouteOrchestrators))]
-        public async Task<string> RouteOrchestrators([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
-        {
+      [Function(nameof(RouteOrchestrators))]
+      public async Task<string> RouteOrchestrators([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
+      {
+         Func<RequestData, FunctionContext, Task<string>> callRouteOrchestrators = async (requestData, executionContext) =>
+         {
             _logger.LogInformation("Routing agents for user query: {userQuery}.", requestData.UserQuery);
 
             _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
@@ -48,17 +53,23 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
 
             try
             {
-                var orchestrator = JsonConvert.DeserializeObject<Contracts.Orchestrator>(result.Content!);
-                return orchestrator!.OrchestratorName;
+               var orchestrator = JsonConvert.DeserializeObject<Contracts.Orchestrator>(result.Content!);
+               return orchestrator!.OrchestratorName;
             }
             catch (Exception ex)
             {
-                return result.Content!;
+               return result.Content!;
             }
-        }
-        [Function(nameof(TriggerConsolidaterAgent))]
-        public async Task<string> TriggerConsolidaterAgent([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
-        {
+         };
+
+         return await _activityTriggerTracingHandler.ExecuteActivityTrigger(callRouteOrchestrators, requestData, executionContext);
+      }
+      [Function(nameof(TriggerConsolidaterAgent))]
+      public async Task<string> TriggerConsolidaterAgent([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
+      {
+
+         Func<RequestData, FunctionContext, Task<string>> callConsolidaterAgent = async (requestData, executionContext) =>
+         {
             _logger.LogInformation("Consolidater agent for user query: {userQuery}.", requestData.UserQuery);
 
             _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
@@ -76,10 +87,16 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
             var result = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
 
             return result.Content!;
-        }
-        [Function(nameof(RouteAgents))]
-        public async Task<string> RouteAgents([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
-        {
+         };
+
+         return await _activityTriggerTracingHandler.ExecuteActivityTrigger(callConsolidaterAgent, requestData, executionContext);
+      }
+      [Function(nameof(RouteAgents))]
+      public async Task<string> RouteAgents([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
+      {
+
+         Func<RequestData, FunctionContext, Task<string>> callRouteAgent = async (requestData, executionContext) =>
+         {
             _logger.LogInformation("Route Agents for user query: {userQuery}.", requestData.UserQuery);
 
             _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
@@ -98,26 +115,32 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
 
             try
             {
-                var agents = JsonConvert.DeserializeObject<Agent>(result.Content!);
-                return agents!.AgentName;
+               var agents = JsonConvert.DeserializeObject<Agent>(result.Content!);
+               return agents!.AgentName;
             }
             catch (Exception ex)
             { // Retry once if there is error in deserializing the result
-                try
-                {
-                    var Retryresult = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
-                    var agents = JsonConvert.DeserializeObject<Agent>(Retryresult.Content!);
-                    return agents!.AgentName;
-                }
-                catch (Exception ex1)
-                {
-                    return "NotFound";
-                }
+               try
+               {
+                  var Retryresult = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
+                  var agents = JsonConvert.DeserializeObject<Agent>(Retryresult.Content!);
+                  return agents!.AgentName;
+               }
+               catch (Exception ex1)
+               {
+                  return "NotFound";
+               }
             }
-        }
-        [Function(nameof(RouteDefaultAgents))]
-        public async Task<string> RouteDefaultAgents([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
-        {
+         };
+
+         return await _activityTriggerTracingHandler.ExecuteActivityTrigger(callRouteAgent, requestData, executionContext);
+      }
+      [Function(nameof(RouteDefaultAgents))]
+      public async Task<string> RouteDefaultAgents([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
+      {
+
+         Func<RequestData, FunctionContext, Task<string>> callRouteDefaultAgent = async (requestData, executionContext) =>
+         {
             _logger.LogInformation("Route default Agents for user query: {userQuery}.", requestData.UserQuery);
 
             _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
@@ -136,23 +159,26 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
 
             try
             {
-                var agents = JsonConvert.DeserializeObject<Agent>(result.Content!);
-                return agents!.AgentName;
+               var agents = JsonConvert.DeserializeObject<Agent>(result.Content!);
+               return agents!.AgentName;
             }
             catch (Exception ex)
             { // Retry once if there is error in deserializing the result
-                try
-                {
-                    var Retryresult = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
-                    var agents = JsonConvert.DeserializeObject<Agent>(Retryresult.Content!);
-                    return agents!.AgentName;
-                }
-                catch (Exception ex1)
-                {
-                    return "NotFound";
-                }
+               try
+               {
+                  var Retryresult = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
+                  var agents = JsonConvert.DeserializeObject<Agent>(Retryresult.Content!);
+                  return agents!.AgentName;
+               }
+               catch (Exception ex1)
+               {
+                  return "NotFound";
+               }
             }
-        }
-    }
+         };
+
+         return await _activityTriggerTracingHandler.ExecuteActivityTrigger(callRouteDefaultAgent, requestData, executionContext);
+      }
+   }
 }
 

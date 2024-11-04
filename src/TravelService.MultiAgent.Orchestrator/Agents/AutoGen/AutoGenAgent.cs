@@ -7,6 +7,7 @@ using Azure.Core;
 using Azure.Identity;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
@@ -23,6 +24,7 @@ using TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins;
 using TravelService.MultiAgent.Orchestrator.Agents.Weather.Plugins;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
+using TravelService.MultiAgent.Orchestrator.Models;
 using TravelService.MultiAgent.Orchestrator.Services;
 using TravelService.Plugins.Common;
 using Agent = TravelService.MultiAgent.Orchestrator.Contracts.Agent;
@@ -41,8 +43,10 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
       private readonly IConfiguration _configuration;
       private readonly ICosmosClientService _cosmosClientService;
       private readonly IServiceProvider _serviceProvider;
+      private readonly TracingContextCache _cache;
 
-      public AutoGenAgent(ILogger<AutoGenAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider)
+      public AutoGenAgent(ILogger<AutoGenAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService,
+         IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider,TracingContextCache cache)
       {
          _logger = logger;
          _kernel = kernel;
@@ -51,9 +55,11 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
          _configuration = configuration;
          _cosmosClientService = cosmosClientService;
          _serviceProvider = serviceProvider;
+         _cache = cache;
       }
       public async Task<ChatCompletionAgent> GetChatCompletionAgentAsync(RequestData requestData, string agentName, Kernel kernel)
       {
+         Console.Write(_cache["sessionId"]);
          var prompt = await _prompty.RenderPromptAsync(Path.Combine("Agents", agentName, $"{agentName}Agent.prompty"), kernel, new KernelArguments
                 {
                     { "context", requestData.UserQuery },

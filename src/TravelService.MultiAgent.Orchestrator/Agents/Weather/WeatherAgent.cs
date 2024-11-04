@@ -13,6 +13,7 @@ using TravelService.MultiAgent.Orchestrator.Agents.Weather.Plugins;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Services;
+using TravelService.MultiAgent.Orchestrator.TracingDataHandlers;
 using TravelService.Plugins.Common;
 
 #pragma warning disable SKEXP0040 
@@ -27,8 +28,11 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
       private readonly IConfiguration _configuration;
       private readonly ICosmosClientService _cosmosClientService;
       private readonly IServiceProvider _serviceProvider;
+      private readonly IActivityTriggerTracingHandler _activityTriggerTracingHandler;
 
-      public WeatherAgent(ILogger<WeatherAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider)
+      public WeatherAgent(ILogger<WeatherAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService,
+         IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider,
+         IActivityTriggerTracingHandler activityTriggerTracingHandler)
       {
          _logger = logger;
          _kernel = kernel;
@@ -37,17 +41,21 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
          _configuration = configuration;
          _cosmosClientService = cosmosClientService;
          _serviceProvider = serviceProvider;
+         _activityTriggerTracingHandler = activityTriggerTracingHandler;
       }
 
       [Function(nameof(TriggerWeatherAgent))]
       public async Task<ChatMessageContent> TriggerWeatherAgent([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
       {
-         try
-         {
-            _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
-            _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new WeatherPlugin(_serviceProvider)));
 
-            var prompt = await _prompty.RenderPromptAsync(Path.Combine("Agents", "Weather", "WeatherAgent.prompty"), _kernel, new KernelArguments
+         Func<RequestData, FunctionContext, Task<ChatMessageContent>> callWeatherAgent = async (requestData, executionContext) =>
+         {
+            try
+            {
+               _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
+               _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new WeatherPlugin(_serviceProvider)));
+
+               var prompt = await _prompty.RenderPromptAsync(Path.Combine("Agents", "Weather", "WeatherAgent.prompty"), _kernel, new KernelArguments
                 {
                     { "context", requestData.UserQuery },
                     { "history", requestData.ChatHistory },
@@ -56,15 +64,18 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
                     { "email", requestData.UserMailId }
                 });
 
-            var result = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
+               var result = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
 
-            return result;
-         }
-         catch (Exception ex)
-         {
-            _logger.LogError(ex, "Error occurred in WeatherAgent.");
-            return new ChatMessageContent(AuthorRole.Assistant, "Weather information not available");
-         }
+               return result;
+            }
+            catch (Exception ex)
+            {
+               _logger.LogError(ex, "Error occurred in WeatherAgent.");
+               return new ChatMessageContent(AuthorRole.Assistant, "Weather information not available");
+            }
+         };
+
+         return await _activityTriggerTracingHandler.ExecuteActivityTrigger(callWeatherAgent, requestData, executionContext);
       }
    }
 }

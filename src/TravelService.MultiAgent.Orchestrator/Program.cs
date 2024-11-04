@@ -1,33 +1,87 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Services;
 using Microsoft.Azure.Cosmos;
-using TravelService.MultiAgent.Orchestrator.Contracts;
 using SendGrid;
-using Azure;
 using Azure.Identity;
-using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 using Microsoft.SemanticKernel.Connectors.AzureOpenAI;
 using Microsoft.SemanticKernel.ChatCompletion;
-using System;
-using TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins;
-using TravelService.MultiAgent.Orchestrator.Agents.Weather.Plugins;
-using TravelService.MultiAgent.Orchestrator.Agents.Booking.Plugins;
+using TravelService.MultiAgent.Orchestrator.Models;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry;
+using static TravelService.MultiAgent.Orchestrator.Helper.Extenstions;
+using TravelService.MultiAgent.Orchestrator.TracingDataHandlers;
+using AzureFunctions.Extensions.Middleware.Abstractions;
+using AzureFunctions.Extensions.Middleware.Infrastructure;
+using Microsoft.AspNetCore.Http;
+using TravelService.MultiAgent.Orchestrator.Middlewares;
+using Azure.Monitor.OpenTelemetry.Exporter;
 
 #pragma warning disable SKEXP0010
 
 var host = new HostBuilder()
-     .ConfigureFunctionsWorkerDefaults()
+     .ConfigureFunctionsWebApplication(applicationBuilder =>
+     {
+        applicationBuilder.UseFunctionContextAccessor();
+     })
     .ConfigureServices(services =>
     {
        services.AddApplicationInsightsTelemetryWorkerService();
        services.ConfigureFunctionsApplicationInsights();
        services.AddLogging();
+       services.AddFunctionContextAccessor();
+
+       #region OpenTelemetry       
+       var openTelemetryResourceBuilder = ResourceBuilder.CreateDefault().AddService(serviceName: "TravelService", serviceVersion: "1.0.0");
+       var openTelemetryTracerProvider = Sdk.CreateTracerProviderBuilder()
+               .AddOtlpExporter()
+               .AddAzureMonitorTraceExporter(c => c.ConnectionString = Environment.GetEnvironmentVariable("APPINSIGHTS_CONNECTION_STRING"))
+               .AddSource("TravelService")
+               .SetSampler(new AlwaysOnSampler())
+               .SetResourceBuilder(openTelemetryResourceBuilder)
+               .Build();
+
+       var metricsProvider = Sdk.CreateMeterProviderBuilder().AddAzureMonitorMetricExporter();
+
+       services.AddSingleton<TracerProvider>(openTelemetryTracerProvider);
+       services.AddSingleton<ILoggerProvider, OpenTelemetryLoggerProvider>();
+       services.AddScoped<IActivityTriggerTracingHandler, ActivityTriggerTracingHandler>();
+       services.AddScoped<IOrchestratorTriggerTracingHandler, OrchestratorTriggerTracingHandler>();
+       services.AddScoped<IPluginTracingHandler, PluginTracingHandler>();
+       services.Configure<OpenTelemetryLoggerOptions>((openTelemetryLoggerOptions) =>
+       {
+          openTelemetryLoggerOptions.SetResourceBuilder(openTelemetryResourceBuilder);
+          openTelemetryLoggerOptions.IncludeFormattedMessage = true;
+          openTelemetryLoggerOptions.AddConsoleExporter();
+          openTelemetryLoggerOptions.AddAzureMonitorLogExporter(c=> c.ConnectionString = Environment.GetEnvironmentVariable("APPINSIGHTS_CONNECTION_STRING"));
+       }
+       );
+
+       services.AddOpenTelemetry(b =>
+       {
+          b.IncludeFormattedMessage = true;
+          b.IncludeScopes = true;
+          b.ParseStateValues = true;
+       });
+       #endregion
+
+       #region Middleware       
+       services.AddTransient<IHttpMiddlewareBuilder, HttpMiddlewareBuilder>((sp) =>
+       {
+          var funcBuilder = new HttpMiddlewareBuilder(sp.GetRequiredService<IHttpContextAccessor>());
+          funcBuilder.Use(new HttpExceptionMiddleware(sp.GetRequiredService<ILogger<HttpExceptionMiddleware>>()));
+          funcBuilder.Use(new OpenTelemetryHttpMiddleware(sp.GetRequiredService<ILogger<OpenTelemetryHttpMiddleware>>(), openTelemetryTracerProvider.GetTracer("TravelService"), sp.GetRequiredService<TracingContextCache>()));
+          return funcBuilder;
+       });
+       #endregion
+
 
        string cosmosdbAccountEndpoint = Environment.GetEnvironmentVariable("CosmosDBAccountEndpoint");
        string openaiEndpoint = Environment.GetEnvironmentVariable("OpenAIEndpoint");
@@ -96,6 +150,7 @@ var host = new HostBuilder()
                endpoint: openaiEndpoint);
           return builder.Build();
        });
+       services.AddScoped<TracingContextCache>();
        services.AddHttpContextAccessor();
        services.AddHttpClient<IPostmarkServiceClient, PostmarkServiceClient>(client =>
        {
@@ -111,7 +166,7 @@ var host = new HostBuilder()
     })
     .UseDefaultServiceProvider((context, options) =>
     {
-       options.ValidateScopes = true;
+       options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
     })
     .Build();
 

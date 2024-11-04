@@ -12,6 +12,7 @@ using TravelService.MultiAgent.Orchestrator.Interfaces;
 using System.Linq;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using TravelService.MultiAgent.Orchestrator.Models;
+using TravelService.MultiAgent.Orchestrator.TracingDataHandlers;
 
 namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
 {
@@ -20,12 +21,18 @@ namespace TravelService.MultiAgent.Orchestrator.DurableOrchestrators
       private readonly TelemetryClient telemetryClient;
       private ICosmosClientService _cosmosClientService;
       private IConnectionMultiplexer redisConnection;
+      private IOrchestratorTriggerTracingHandler _orchestratorTriggerTracingHandler;
+      private readonly TracingContextCache _cache;
 
-      public ManagerOrchestrator(TelemetryClient telemetry, ICosmosClientService cosmosClientService, IConnectionMultiplexer connectionMultiplexer)
+
+      public ManagerOrchestrator(TelemetryClient telemetry, ICosmosClientService cosmosClientService,
+         IConnectionMultiplexer connectionMultiplexer, TracingContextCache cache, IOrchestratorTriggerTracingHandler orchestratorTriggerTracingHandler)
       {
          telemetryClient = telemetry;
          _cosmosClientService = cosmosClientService;
          redisConnection = connectionMultiplexer;
+         _cache = cache;
+         _orchestratorTriggerTracingHandler = orchestratorTriggerTracingHandler;
       }
 
       [Function(nameof(ManagerOrchestrator))]

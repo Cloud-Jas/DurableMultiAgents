@@ -3,15 +3,18 @@ using Microsoft.SemanticKernel;
 using System.ComponentModel;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Services;
+using TravelService.MultiAgent.Orchestrator.TracingDataHandlers;
 
 namespace TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins
 {
    public class FlightPlugin
    {
       private readonly IServiceProvider _serviceProvider;
+      private readonly IPluginTracingHandler _pluginTracingHandler;
       public FlightPlugin(IServiceProvider serviceProvider)
       {
          _serviceProvider = serviceProvider;
+         _pluginTracingHandler = serviceProvider.GetService<IPluginTracingHandler>() ?? throw new ArgumentNullException(nameof(IPluginTracingHandler));
       }
 
       [KernelFunction("GetAirportCode")]
@@ -22,20 +25,45 @@ namespace TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins
       [Description("Destination city")]
             string destinationCity)
       {
-         var cosmosService = _serviceProvider.GetRequiredService<ICosmosClientService>();
 
-         var airports = await cosmosService.FetchAirportDetailsAsync(departureCity, destinationCity);
+         var parameters = new Dictionary<string, string>
+         {
+            {"pluginName","GetAirpotCodePlugin" },
+            { "departureCity", departureCity },
+            { "destinationCity", destinationCity }
+         };
 
-         string response = "";
+         Func<Dictionary<string, string>, Task<string>> callAirportCodePlugin = async (inputs) =>
+         {
 
-         var destinationAirport = airports.FirstOrDefault(a => string.Equals(a.city, destinationCity, StringComparison.OrdinalIgnoreCase));
-         var departureAirport = airports.FirstOrDefault(a => string.Equals(a.city, departureCity, StringComparison.OrdinalIgnoreCase));
+            try
+            {
+               var departureCity = inputs["departureCity"];
+               var destinationCity = inputs["destinationCity"];
 
-         response += $"Destination city: \"{destinationCity}\"  Destination Airport Code: \"{destinationAirport.code}\"  Destination Airport Name: \"{destinationAirport.name}\"\n";
-         response += $"Departure city: \"{departureCity}\"  Departure Airport Code: \"{departureAirport.code}\"  Departure Airport Name: \"{departureAirport.name}\"\n";
+               var cosmosService = _serviceProvider.GetRequiredService<ICosmosClientService>();
+
+               var airports = await cosmosService.FetchAirportDetailsAsync(departureCity, destinationCity);
+
+               string response = "";
+
+               var destinationAirport = airports.FirstOrDefault(a => string.Equals(a.city, destinationCity, StringComparison.OrdinalIgnoreCase));
+               var departureAirport = airports.FirstOrDefault(a => string.Equals(a.city, departureCity, StringComparison.OrdinalIgnoreCase));
+
+               response += $"Destination city: \"{destinationCity}\"  Destination Airport Code: \"{destinationAirport.code}\"  Destination Airport Name: \"{destinationAirport.name}\"\n";
+               response += $"Departure city: \"{departureCity}\"  Departure Airport Code: \"{departureAirport.code}\"  Departure Airport Name: \"{departureAirport.name}\"\n";
 
 
-         return response;
+               return response;
+            }
+            catch (Exception ex)
+            {
+               return "Error while looking for results!";
+            }
+         };
+
+         return await _pluginTracingHandler.ExecutePlugin(callAirportCodePlugin, parameters);
+
       }
 
       [KernelFunction("GetFlightListings")]
@@ -48,18 +76,43 @@ namespace TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins
           [Description("Departure date")]
             DateTime departureDate)
       {
-         var cosmosService = _serviceProvider.GetRequiredService<ICosmosClientService>();
 
-         var flightListings = await cosmosService.FetchFlightListingsAsync(departureAirportCode, destinationAirportCode, departureDate);
-
-         string response = "";
-
-         foreach (var flight in flightListings)
+         var parameters = new Dictionary<string, string>
          {
-            response += $"Flight Number: \"{flight.flightNumber}\"  Departure Time: \"{flight.departureTime}\"  Price: \"{flight.price}\"   Duration: \"{flight.duration}\"\n";
-         }
+            {"pluginName", "GetDepartureFlightListingPlugin" },
+            { "departureAirportCode", departureAirportCode },
+            { "destinationAirportCode", destinationAirportCode },
+            { "departureDate", departureDate.ToString() }
+         };
 
-         return response;
+         Func<Dictionary<string, string>, Task<string>> callFlightListingsPlugin = async (inputs) =>
+         {
+            try
+            {
+               var departureAirportCode = inputs["departureAirportCode"];
+               var destinationAirportCode = inputs["destinationAirportCode"];
+               var departureDate = DateTime.Parse(inputs["departureDate"]);
+
+               var cosmosService = _serviceProvider.GetRequiredService<ICosmosClientService>();
+
+               var flightListings = await cosmosService.FetchFlightListingsAsync(departureAirportCode, destinationAirportCode, departureDate);
+
+               string response = "";
+
+               foreach (var flight in flightListings)
+               {
+                  response += $"Flight Number: \"{flight.flightNumber}\"  Departure Time: \"{flight.departureTime}\"  Price: \"{flight.price}\"   Duration: \"{flight.duration}\"\n";
+               }
+
+               return response;
+            }
+            catch (Exception ex)
+            {
+               return "Error while looking for results!";
+            }
+         };
+
+         return await _pluginTracingHandler.ExecutePlugin(callFlightListingsPlugin, parameters);
       }
    }
 }

@@ -1,4 +1,7 @@
 ﻿
+using OpenTelemetry.Trace;
+using System.Security.Policy;
+
 namespace TravelService.MultiAgent.Orchestrator.Contracts
 {
    public class RequestData
@@ -15,7 +18,10 @@ namespace TravelService.MultiAgent.Orchestrator.Contracts
       public string? AssistantType { get; set; }
       public string? FunctionCallId { get; set; }
       public string IntermediateResponse { get; set; }
-
+      public Dictionary<string, object> OrchestratorTracingCache { get; set; } = new Dictionary<string, object>();
+      public Dictionary<string, object> SubOrchestratorTracingCache { get; set; } = new Dictionary<string, object>();
+      public Dictionary<string, object> ParentTracingCache { get; set; } = new Dictionary<string, object>();      
+      public HashSet<string> InstanceIds { get; set; } = new HashSet<string>();
       public void Set(RequestData? requestData)
       {
          this.SessionId = requestData.SessionId;

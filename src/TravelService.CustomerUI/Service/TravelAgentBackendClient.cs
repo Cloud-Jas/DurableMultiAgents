@@ -52,7 +52,7 @@ public class TravelAgentBackendClient(HttpClient http)
 
       var response = await http.SendAsync(httpRequest);
       var json = await response.Content.ReadAsStringAsync();
-      var result = JsonConvert.DeserializeObject<BookingDetailsResult>(Convert.ToString((JObject.Parse(json))["Value"]));
+      var result = JsonConvert.DeserializeObject<BookingDetailsResult>(json);
       return result;
    }
 
@@ -68,7 +68,7 @@ public class TravelAgentBackendClient(HttpClient http)
 
       var response = await http.SendAsync(httpRequest);
       var json = await response.Content.ReadAsStringAsync();
-      var result = JsonConvert.DeserializeObject<List<SessionSummary>>(Convert.ToString((JObject.Parse(json))["Value"]));
+      var result = JsonConvert.DeserializeObject<List<SessionSummary>>(json);
       return result;
    }
 }

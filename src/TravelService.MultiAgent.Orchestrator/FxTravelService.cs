@@ -1,3 +1,5 @@
+using AzureFunctions.Extensions.Middleware;
+using AzureFunctions.Extensions.Middleware.Abstractions;
 using Microsoft.ApplicationInsights.WindowsServer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
@@ -6,9 +8,12 @@ using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OpenTelemetry.Trace;
 using StackExchange.Redis;
+using System.Diagnostics;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.DurableOrchestrators;
+using TravelService.MultiAgent.Orchestrator.Helper;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Models;
 #pragma warning disable OPENAI002
@@ -18,11 +23,13 @@ namespace TravelService.MultiAgent.Orchestrator
    public class FxTravelService
    {
       private readonly ICosmosClientService _cosmosClientService;
-      private readonly INL2SQLService _nL2SQLService;      
-      public FxTravelService(ICosmosClientService cosmosClientService, INL2SQLService nL2SQLService)
+      private readonly INL2SQLService _nL2SQLService;
+      private readonly IHttpMiddlewareBuilder _middlewareBuilder;
+      public FxTravelService(ICosmosClientService cosmosClientService, INL2SQLService nL2SQLService, IHttpMiddlewareBuilder middlewareBuilder)
       {
          _cosmosClientService = cosmosClientService;
-         _nL2SQLService = nL2SQLService;         
+         _nL2SQLService = nL2SQLService;
+         _middlewareBuilder = middlewareBuilder;
       }
 
       [Function("MultiAgentOrchestration")]
@@ -144,7 +151,7 @@ namespace TravelService.MultiAgent.Orchestrator
 
          string request = await new StreamReader(req.Body).ReadToEndAsync();
 
-         var realtimeRequest = JsonConvert.DeserializeObject<RealtimeRequest>(request);         
+         var realtimeRequest = JsonConvert.DeserializeObject<RealtimeRequest>(request);
 
          if (realtimeRequest.SessionId == null || realtimeRequest.FunctionCallId == null)
          {
@@ -167,7 +174,7 @@ namespace TravelService.MultiAgent.Orchestrator
          requestData.AssistantType = assistantType;
 
          string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
-             nameof(ManagerOrchestrator), requestData);       
+             nameof(ManagerOrchestrator), requestData);
 
          return new AcceptedResult();
       }
@@ -178,47 +185,55 @@ namespace TravelService.MultiAgent.Orchestrator
           [DurableClient] DurableTaskClient client,
           FunctionContext executionContext)
       {
-         ILogger logger = executionContext.GetLogger("ChatAssistant");
-
-         string sessionId = req.Headers.GetValues("Session-Id")!.FirstOrDefault();
-
-         string userId = req.Headers.GetValues("User-Id")!.FirstOrDefault();
-
-         if (string.IsNullOrEmpty(sessionId) || string.IsNullOrEmpty(userId))
+         return await _middlewareBuilder.ExecuteAsync(new HttpMiddleware(async (httpContext) =>
          {
-            return new BadRequestObjectResult("Session-Id or User-Id header is missing.");
-         }
 
-         string assistantType = req.Headers.GetValues("Agent-Type")!.FirstOrDefault();
+            ILogger logger = executionContext.GetLogger("ChatAssistant");
 
-         string userQuery = await new StreamReader(req.Body).ReadToEndAsync();
+            string sessionId = req.Headers.GetValues("Session-Id")!.FirstOrDefault();
 
-         var requestData = JsonConvert.DeserializeObject<RequestData>(userQuery);
+            string userId = req.Headers.GetValues("User-Id")!.FirstOrDefault();
 
-         if (requestData == null)
-         {
-            return new BadRequestObjectResult("Invalid request data.");
-         }
+            if (string.IsNullOrEmpty(sessionId) || string.IsNullOrEmpty(userId))
+            {
+               return new BadRequestObjectResult("Session-Id or User-Id header is missing.");
+            }
 
-         var userDetails = await _cosmosClientService.FetchUserDetailsAsync(userId);
+            string assistantType = req.Headers.GetValues("Agent-Type")!.FirstOrDefault();
 
-         var chatHistory = await _cosmosClientService.FetchChatHistoryAsync(sessionId);
+            string userQuery = await new StreamReader(req.Body).ReadToEndAsync();
 
-         requestData.ChatHistory = chatHistory;
-         requestData.UserId = userId;
-         requestData.SessionId = sessionId;
-         requestData.UserName = userDetails.firstName;
-         requestData.UserMailId = userDetails.email;
-         requestData.AssistantType = assistantType;
+            var requestData = JsonConvert.DeserializeObject<RequestData>(userQuery);
 
-         string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
-             nameof(ManagerOrchestrator), requestData);
+            if (requestData == null)
+            {
+               return new BadRequestObjectResult("Invalid request data.");
+            }
 
-         chatHistory.Add("User: " + requestData.UserQuery);
+            var userDetails = await _cosmosClientService.FetchUserDetailsAsync(userId);
 
-         await _cosmosClientService.StoreChatHistoryAsync(sessionId, requestData.UserQuery, requestData.UserId, requestData.UserName, false);
+            var chatHistory = await _cosmosClientService.FetchChatHistoryAsync(sessionId);
 
-         return new AcceptedResult();
+            requestData.ChatHistory = chatHistory;
+            requestData.UserId = userId;
+            requestData.SessionId = sessionId;
+            requestData.UserName = userDetails.firstName;
+            requestData.UserMailId = userDetails.email;
+            requestData.AssistantType = assistantType;
+
+            requestData.ParentTracingCache.Add(OpenTelemetryConstants.TRACEID_KEY, req.Headers.GetValues(OpenTelemetryConstants.TRACEID_KEY).FirstOrDefault()!);
+            requestData.ParentTracingCache.Add(OpenTelemetryConstants.PARENT_SPANID_KEY, req.Headers.GetValues(OpenTelemetryConstants.PARENT_SPANID_KEY).FirstOrDefault()!);
+            requestData.ParentTracingCache.Add(OpenTelemetryConstants.PARENT_SPAN_TRACEFLAG_KEY, req.Headers.GetValues(OpenTelemetryConstants.PARENT_SPAN_TRACEFLAG_KEY).FirstOrDefault()!);
+
+            string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
+                nameof(ManagerOrchestrator), requestData);
+
+            chatHistory.Add("User: " + requestData.UserQuery);
+
+            await _cosmosClientService.StoreChatHistoryAsync(sessionId, requestData.UserQuery, requestData.UserId, requestData.UserName, false);
+
+            return new AcceptedResult();
+         }, executionContext));
       }
 
       [Function("GetChatHistories")]

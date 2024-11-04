@@ -13,6 +13,7 @@ using TravelService.MultiAgent.Orchestrator.Agents.Flight.Plugins;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Services;
+using TravelService.MultiAgent.Orchestrator.TracingDataHandlers;
 using TravelService.Plugins.Common;
 
 #pragma warning disable SKEXP0040 
@@ -29,8 +30,11 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
       private readonly IConfiguration _configuration;
       private readonly ICosmosClientService _cosmosClientService;
       private readonly IServiceProvider _serviceProvider;
+      private readonly IActivityTriggerTracingHandler _activityTriggerTracingHandler;
 
-      public FlightAgent(ILogger<FlightAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService, IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider)
+      public FlightAgent(ILogger<FlightAgent> logger, Kernel kernel, IPromptyService prompty, IKernelService kernelService,
+         IConfiguration configuration, ICosmosClientService cosmosClientService, IServiceProvider serviceProvider,
+         IActivityTriggerTracingHandler activityTriggerTracingHandler)
       {
          _logger = logger;
          _kernel = kernel;
@@ -39,17 +43,22 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
          _configuration = configuration;
          _cosmosClientService = cosmosClientService;
          _serviceProvider = serviceProvider;
+         _activityTriggerTracingHandler = activityTriggerTracingHandler;
       }
 
       [Function(nameof(TriggerFlightAgent))]
       public async Task<ChatMessageContent> TriggerFlightAgent([ActivityTrigger] RequestData requestData, FunctionContext executionContext)
       {
-         try
-         {
-            _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
-            _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new FlightPlugin(_serviceProvider)));
 
-            var prompt = await _prompty.RenderPromptAsync(Path.Combine("Agents", "Flight", "FlightAgent.prompty"), _kernel, new KernelArguments
+         Func<RequestData, FunctionContext, Task<ChatMessageContent>> callFlightAgent = async (requestData, executionContext) =>
+         {
+
+            try
+            {
+               _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new CalendarPlugin()));
+               _kernel.Plugins.Add(KernelPluginFactory.CreateFromObject(new FlightPlugin(_serviceProvider)));
+
+               var prompt = await _prompty.RenderPromptAsync(Path.Combine("Agents", "Flight", "FlightAgent.prompty"), _kernel, new KernelArguments
                 {
                     { "context", requestData.UserQuery },
                     { "history", requestData.ChatHistory },
@@ -58,15 +67,18 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
                     { "email", requestData.UserMailId }
                 });
 
-            var result = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
+               var result = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
 
-            return result;
-         }
-         catch (Exception ex)
-         {
-            _logger.LogError(ex, "Error occurred in FlightAgent.");
-            throw;
-         }
+               return result;
+            }
+            catch (Exception ex)
+            {
+               _logger.LogError(ex, "Error occurred in FlightAgent.");
+               throw;
+            }
+         };
+
+         return await _activityTriggerTracingHandler.ExecuteActivityTrigger(callFlightAgent, requestData, executionContext);
       }      
    }
 }

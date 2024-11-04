@@ -30,6 +30,24 @@ Disclaimer: Realtime Agent only works in local environment, will be updated soon
 
 ![Image description](docs/images/azuredurablefunction.png)
 
+
+# Distributed Tracing
+
+## Jaeger tracing
+
+![Image description](docs/images/distributedtracing-1.png)
+
+![Image description](docs/images/distributedtracing-2.png)
+
+![Image description](docs/images/distributedtracing-3.png)
+
+![Image description](docs/images/distributedtracing-4.png)
+
+
+## Application Insights
+
+![Image description](docs/images/distributedtracing-5.png)
+
 # Highlights
 
 - Proposed solution have implemented different patterns with Multi-Agents , some of them are 
@@ -42,6 +60,7 @@ Disclaimer: Realtime Agent only works in local environment, will be updated soon
 - Provided seed data project for you to get started
 - Switch between Custom/SingleAI/AutoGen based Multi-Agents on the fly.
 - Monitoring agent's responses in the side pane of the application
+- Distributed tracing support 
 
 ## Prerequisites
 
