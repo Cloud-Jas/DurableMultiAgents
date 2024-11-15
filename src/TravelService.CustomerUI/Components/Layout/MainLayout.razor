@@ -103,8 +103,7 @@
    }
 
    protected override async Task OnParametersSetAsync()
-   {
-      ChatHistory = null;
+   {      
       ChatHistory = await Backend.GetBookingMessagesByUserIdAsync(userId);
    }
    private void ToggleSidebar()
