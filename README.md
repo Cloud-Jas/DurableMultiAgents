@@ -85,6 +85,11 @@ azd up
 
 # Steps to run the project locally
 
+> **IMPORTANT**  
+> For existing users of ContosoTravelAgency:  
+> Make sure to add `HARD_RELOAD` in the `.env` file under the `.azure` folder to clear existing tables and rewrite with new data.
+
+
 Add the `local.settings.json` in the Azure Durable Function project, with the below details
 
 ```json

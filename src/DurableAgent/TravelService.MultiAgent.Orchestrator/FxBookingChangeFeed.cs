@@ -97,6 +97,8 @@ namespace TravelService.MultiAgent.Orchestrator
                Id = booking.Id,
                BookingDate = booking.BookingDate,
                Status = booking.Status,
+               DestinationCity = booking.DestinationCity,
+               DepartureCity = booking.DepartureCity,
                Passenger = new PassengerDetails
                {
                   Id = passenger.Id,
@@ -190,7 +192,9 @@ namespace TravelService.MultiAgent.Orchestrator
             {
                Id = booking.Id,
                BookingDate = booking.BookingDate,
-               Status = booking.Status
+               Status = booking.Status,
+               DestinationCity = booking.DestinationCity,
+               DepartureCity = booking.DepartureCity
             };
 
             if (booking.ToDestinationTicket != null)

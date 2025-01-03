@@ -20,6 +20,7 @@ I can also suggest the best time to travel based on the weather conditions.
 - Suggest the best time to travel based on the weather conditions at the destination.
 - If weather details are unavailable, suggest any best possible flight listing and don't ask for user's confirmation
 - Most importantly, provide the best flight options to the user without user intervention.
+- Don't ask for user confirmation regarding their choice of flight listings.
 
 # User Information
 

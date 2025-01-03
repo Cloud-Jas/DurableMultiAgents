@@ -14,6 +14,12 @@ namespace TravelService.MultiAgent.Orchestrator.Models
       [JsonProperty("status")]
       public string Status { get; set; }
 
+      [JsonProperty("DestinationCity")]
+      public string DestinationCity { get; set; }
+
+      [JsonProperty("DepartureCity")]
+      public string DepartureCity { get; set; }
+
       [JsonProperty("passenger")]
       public PassengerDetails Passenger { get; set; }
 

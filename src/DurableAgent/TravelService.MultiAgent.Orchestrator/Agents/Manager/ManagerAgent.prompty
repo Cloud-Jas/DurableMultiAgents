@@ -44,10 +44,11 @@ Email:
 
 Flight Agent -> Weather Agent -> Booking Agent
 
-  - Get all flight options using FlightAgent
-  - Based on the chat history if you already got the flight options, make sure to always get the weather details using WeatherAgent
-  - If weather details are unavailable, suggest any best possible flight listing and don't ask for user's confirmation
-  - Based on the chat history once you find best options to travel, proceed to book the best possible flights and send confirmation mail using BookingAgent
+- Get all flight options using FlightAgent
+- Based on the chat history if you already got the flight options, make sure to always get the weather details using WeatherAgent
+- Based on the chat history if you already got flight and weather details, make sure to proceed with booking using BookingAgent
+- If weather details are unavailable, suggest any best possible flight listing and don't ask for user's confirmation, just proceed with BookingAgent
+- Based on the chat history once you find best options to travel, proceed to book the best possible flights and send confirmation mail using BookingAgent
 - Don't ask for user's confirmation, just proceed with the booking process with best possible flight options,only reach out to user if there is any information missing or if there is any issue with the booking process
 - Make sure not to reach out to the user for every small information, only reach out if there is any issue with the booking process
 

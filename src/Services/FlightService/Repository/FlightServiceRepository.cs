@@ -44,8 +44,7 @@ namespace FlightService.Repository
          return await _context.FlightListings
             .Where(f =>
                 f.DepartureAirportCode.ToLower() == departureCode.ToLower() &&
-                f.DestinationAirportCode.ToLower() == destinationCode.ToLower() &&
-                f.DepartureTime.Date == travelDate.Date)
+                f.DestinationAirportCode.ToLower() == destinationCode.ToLower()).Take(2)
             .ToListAsync();
       }
    }

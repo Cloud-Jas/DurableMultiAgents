@@ -151,7 +151,7 @@ function Create-Table {
                     AirlineCode NVARCHAR(10) NOT NULL,
                     DepartureAirportCode NVARCHAR(10) NOT NULL,
                     DestinationAirportCode NVARCHAR(10) NOT NULL,
-                    DepartureTime DATETIME NOT NULL,
+                    DepartureTime NVARCHAR(50) NOT NULL,
                     Price DECIMAL(10, 2) NOT NULL,
                     Description NVARCHAR(255) NULL,
                     AircraftType NVARCHAR(100) NULL,
@@ -288,6 +288,7 @@ foreach ($service in $services) {
                     INSERT INTO Airlines (AirlineId, Name, Code, Country, City, LogoUrl)
                     VALUES ('$($record.Id)', '$($record.Name)', '$($record.Code)', '$($record.Country)', '$($record.City)', '$($record.LogoUrl)');
 "@
+ Write-Output "Inserting record with ID $($record.Name) into table '$table'..."
                 }
                 "Airports" {
                     $insertQuery = @"
@@ -308,6 +309,7 @@ foreach ($service in $services) {
 "@
                 }
             }
+           
             Invoke-Sqlcmd -ConnectionString $connectionString -Query $insertQuery
         }
     }

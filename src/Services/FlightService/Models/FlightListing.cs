@@ -10,7 +10,7 @@ namespace FlightService.Models
       public string AirlineId { get; set; }
       public string DepartureAirportCode { get; set; }
       public string DestinationAirportCode { get; set; }
-      public DateTime DepartureTime { get; set; }
+      public string DepartureTime { get; set; }
       public decimal Price { get; set; }
       public string Description { get; set; }
       public string AircraftType { get; set; }
