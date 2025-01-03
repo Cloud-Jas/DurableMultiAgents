@@ -39,6 +39,7 @@ param dataActions array = [
 
 param deployments array = []
 param deploymentCapacity int = 120
+param apimName string
 
 var indexingPolicy = {
   automatic: true
@@ -96,7 +97,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-05-01' = {
   sku: { name: 'Standard_LRS' }
   properties: {
     minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
+    allowBlobPublicAccess: true
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Allow'
@@ -124,7 +125,13 @@ resource cosmosDBAccount 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
         failoverPriority: 0
       }
     ]
-    disableKeyBasedMetadataWriteAccess: true   
+    disableKeyBasedMetadataWriteAccess: true
+    backupPolicy: {
+      type: 'Continuous'
+      continuousModeProperties: {
+        tier: 'Continuous30Days'
+      }
+    }
   }
 }
 
@@ -134,118 +141,6 @@ resource cosmosDBDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@20
   properties: {
     resource: {
       id: 'ContosoTravelAgency'
-    }
-  }
-}
-
-resource flightListingsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
-  name: 'FlightListings'
-  parent: cosmosDBDatabase
-  properties: {
-    resource: {
-      id: 'FlightListings'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
-resource bookingsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
-  name: 'Bookings'
-  parent: cosmosDBDatabase
-  properties: {
-    resource: {
-      id: 'Bookings'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
-resource airlinesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
-  name: 'Airlines'
-  parent: cosmosDBDatabase
-  properties: {
-    resource: {
-      id: 'Airlines'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
-resource passengersContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
-  name: 'Passengers'
-  parent: cosmosDBDatabase
-  properties: {
-    resource: {
-      id: 'Passengers'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
-resource airportsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
-  name: 'Airports'
-  parent: cosmosDBDatabase
-  properties: {
-    resource: {
-      id: 'Airports'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
-resource paymentsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
-  name: 'Payments'
-  parent: cosmosDBDatabase
-  properties: {
-    resource: {
-      id: 'Payments'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
-resource weatherContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
-  name: 'Weather'
-  parent: cosmosDBDatabase
-  properties: {
-    resource: {
-      id: 'Weather'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
     }
   }
 }
@@ -272,22 +167,6 @@ resource semanticBookingLayerContainer 'Microsoft.DocumentDB/databaseAccounts/sq
   properties: {
     resource: {
       id: 'SemanticBookingLayer'
-      partitionKey: {
-        paths: [
-          '/id'
-        ]
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
-resource leasesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
-  name: 'leases'
-  parent: cosmosDBDatabase
-  properties: {
-    resource: {
-      id: 'leases'
       partitionKey: {
         paths: [
           '/id'
@@ -522,6 +401,10 @@ resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
           name: 'RedisConnectionString'
           value: '${redisCacheName}.redis.cache.windows.net,abortConnect=false,ssl=true,password=${redisCache.listKeys().primaryKey}'
         }  
+        {
+          name: 'ApimUrl'
+          value: 'https://${apimName}.azure-api.net'
+        }
       ],env, map(secrets, secret => {
         name: secret.name
         value: secret.value

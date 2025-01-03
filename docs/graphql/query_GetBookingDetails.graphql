@@ -1,0 +1,34 @@
+query GetBookingDetails($passengerId: String!, $flightNumber: String!) {
+  passengers(filter: { Id: { eq: $passengerId }  }) {
+     items {
+        Id
+        FirstName
+        LastName
+        Email
+        Phone
+     }
+  }
+  flightListings (filter: { FlightNumber: {eq: $flightNumber }  }){
+     items {
+        FlightId
+        DepartureAirportCode
+        DestinationAirportCode
+        Duration
+        FlightNumber
+        DepartureTime
+        Price
+        AvailableSeats
+        AircraftType
+        airlines{
+         items {
+            AirlineId
+            Name
+            Code
+            Country
+            City
+            LogoUrl
+         }
+        }
+     }
+  }
+}

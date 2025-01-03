@@ -1,0 +1,104 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35208.52
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApp", "WebApp", "{ED3801F4-9B8B-4455-9820-0C40829C4921}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DurableAgent", "DurableAgent", "{E39CB305-C66F-424F-9C49-96EF54E50B4C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{DA96189E-B413-4627-BBD2-50F348485469}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TravelService.CustomerUI", "src\WebApp\TravelService.CustomerUI\TravelService.CustomerUI.csproj", "{4EA4C6A9-F03C-4444-B753-6DB3559D1209}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TravelService.MultiAgent.Orchestrator", "src\DurableAgent\TravelService.MultiAgent.Orchestrator\TravelService.MultiAgent.Orchestrator.csproj", "{608F4D5E-A6BD-48AA-A4D8-049D6FC7779F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TravelService.Plugins.Common", "src\DurableAgent\TravelService.Plugins.Common\TravelService.Plugins.Common.csproj", "{A55126D3-A95F-4C5C-9530-C06BAE07E322}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightService", "src\Services\FlightService\FlightService.csproj", "{FA64A178-F305-484C-89D0-2663A10D9C44}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeatherService", "src\Services\WeatherService\WeatherService.csproj", "{2AB359D2-A7A4-412B-B832-80F65DA15BDB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookingService", "src\Services\BookingService\BookingService.csproj", "{BDFE1906-5FBC-41B9-A6B5-A73C05792369}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserService", "src\Services\UserService\UserService.csproj", "{B7ABF14F-DFD6-4ACD-BDD1-A81C582D5832}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".ado", ".ado", "{CDD5C2E4-F5BB-4A7A-9DBA-1BD27CE81CAA}"
+	ProjectSection(SolutionItems) = preProject
+		infra\abbreviations.json = infra\abbreviations.json
+		azure.yaml = azure.yaml
+		infra\main.bicep = infra\main.bicep
+		infra\main.parameters.json = infra\main.parameters.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app", "app", "{D832B865-7919-4E94-B005-2AB33056F4EC}"
+	ProjectSection(SolutionItems) = preProject
+		infra\app\ContainerAppServices.bicep = infra\app\ContainerAppServices.bicep
+		infra\app\TravelService.CustomerUI.bicep = infra\app\TravelService.CustomerUI.bicep
+		infra\app\TravelService.MultiAgent.Orchestrator.bicep = infra\app\TravelService.MultiAgent.Orchestrator.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{9023F876-1DDB-49C9-8121-2310F7E4A205}"
+	ProjectSection(SolutionItems) = preProject
+		infra\shared\dashboard-web.bicep = infra\shared\dashboard-web.bicep
+		infra\shared\monitoring.bicep = infra\shared\monitoring.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{5B1E58DB-1208-484F-A6BD-4ECBF2F7AA67}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4EA4C6A9-F03C-4444-B753-6DB3559D1209}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EA4C6A9-F03C-4444-B753-6DB3559D1209}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EA4C6A9-F03C-4444-B753-6DB3559D1209}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EA4C6A9-F03C-4444-B753-6DB3559D1209}.Release|Any CPU.Build.0 = Release|Any CPU
+		{608F4D5E-A6BD-48AA-A4D8-049D6FC7779F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{608F4D5E-A6BD-48AA-A4D8-049D6FC7779F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{608F4D5E-A6BD-48AA-A4D8-049D6FC7779F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{608F4D5E-A6BD-48AA-A4D8-049D6FC7779F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A55126D3-A95F-4C5C-9530-C06BAE07E322}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A55126D3-A95F-4C5C-9530-C06BAE07E322}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A55126D3-A95F-4C5C-9530-C06BAE07E322}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A55126D3-A95F-4C5C-9530-C06BAE07E322}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA64A178-F305-484C-89D0-2663A10D9C44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA64A178-F305-484C-89D0-2663A10D9C44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA64A178-F305-484C-89D0-2663A10D9C44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA64A178-F305-484C-89D0-2663A10D9C44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AB359D2-A7A4-412B-B832-80F65DA15BDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AB359D2-A7A4-412B-B832-80F65DA15BDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AB359D2-A7A4-412B-B832-80F65DA15BDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AB359D2-A7A4-412B-B832-80F65DA15BDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDFE1906-5FBC-41B9-A6B5-A73C05792369}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDFE1906-5FBC-41B9-A6B5-A73C05792369}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDFE1906-5FBC-41B9-A6B5-A73C05792369}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDFE1906-5FBC-41B9-A6B5-A73C05792369}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7ABF14F-DFD6-4ACD-BDD1-A81C582D5832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7ABF14F-DFD6-4ACD-BDD1-A81C582D5832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7ABF14F-DFD6-4ACD-BDD1-A81C582D5832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7ABF14F-DFD6-4ACD-BDD1-A81C582D5832}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4EA4C6A9-F03C-4444-B753-6DB3559D1209} = {ED3801F4-9B8B-4455-9820-0C40829C4921}
+		{608F4D5E-A6BD-48AA-A4D8-049D6FC7779F} = {E39CB305-C66F-424F-9C49-96EF54E50B4C}
+		{A55126D3-A95F-4C5C-9530-C06BAE07E322} = {E39CB305-C66F-424F-9C49-96EF54E50B4C}
+		{FA64A178-F305-484C-89D0-2663A10D9C44} = {DA96189E-B413-4627-BBD2-50F348485469}
+		{2AB359D2-A7A4-412B-B832-80F65DA15BDB} = {DA96189E-B413-4627-BBD2-50F348485469}
+		{BDFE1906-5FBC-41B9-A6B5-A73C05792369} = {DA96189E-B413-4627-BBD2-50F348485469}
+		{B7ABF14F-DFD6-4ACD-BDD1-A81C582D5832} = {DA96189E-B413-4627-BBD2-50F348485469}
+		{D832B865-7919-4E94-B005-2AB33056F4EC} = {CDD5C2E4-F5BB-4A7A-9DBA-1BD27CE81CAA}
+		{9023F876-1DDB-49C9-8121-2310F7E4A205} = {CDD5C2E4-F5BB-4A7A-9DBA-1BD27CE81CAA}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E457A9C4-79F5-4463-8693-B72D5926888D}
+	EndGlobalSection
+EndGlobal

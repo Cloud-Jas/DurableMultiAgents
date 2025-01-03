@@ -1,0 +1,18 @@
+# Use a .NET SDK image to build the project
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /app
+EXPOSE 8080
+
+# Copy project files
+COPY *.csproj .
+RUN dotnet restore
+
+# Copy the rest of the code and publish the app
+COPY . .
+RUN dotnet publish -c Release -o out
+
+# Use a lightweight runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/out .
+ENTRYPOINT ["dotnet", "FlightService.dll"]

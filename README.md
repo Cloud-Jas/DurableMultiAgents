@@ -14,7 +14,7 @@
 
 # Architecture
 
-![Image description](docs/images/durableagent-demo.gif)
+![Image description](docs/images/DurableMultiAgents.jpg)
 
 Durable Multi Agents is an attempt to make use of Azure Durable Functions with Semantic Kernel to build Multi-Agents workflows.
 
@@ -81,6 +81,7 @@ azd up
 ```
 2) **[Optional]** Once the deployment is complete, make sure to update the settings with postmark server token in the Azure Portal. This is to ensure the email notifications are sent properly.
 3) **[Optional]** If you want to switch to a different user, update the settings in the Azure Portal with the new userId.
+4) **[optional]** If you want to connect with Microsoft Data fabric , follow this [blog]() for instructions to setup. 
 
 # Steps to run the project locally
 
