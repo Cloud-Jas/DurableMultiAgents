@@ -70,12 +70,12 @@ namespace TravelService.MultiAgent.Orchestrator
                      var semanticBookingVectorContainer = client.GetContainer(databaseId, "SemanticBookingVectorLayer");
                      var bookingVector = new
                      {
-                        booking.Id,
+                        id = booking.Id,
                         metadata = JsonConvert.SerializeObject(denormalizedBooking),
                         vector = (await _azureOpenAITextEmbeddingGenerationService.GenerateEmbeddingAsync(JsonConvert.SerializeObject(denormalizedBooking))).ToArray()
                      };
 
-                     await semanticBookingVectorContainer.UpsertItemAsync(bookingVector, new PartitionKey(bookingVector.Id));
+                     await semanticBookingVectorContainer.UpsertItemAsync(bookingVector, new PartitionKey(bookingVector.id));
                   }
                }
             }
@@ -117,7 +117,7 @@ namespace TravelService.MultiAgent.Orchestrator
                   PricePaid = booking.ToDestinationTicket.PricePaid,
                   Flight = new FlightDetails
                   {
-                     FlightId = toDestinationFlight.Id,
+                     FlightId = booking.ToDestinationTicket.FlightId,
                      DepartureAirportCode = toDestinationFlight.DepartureAirportCode,
                      DestinationAirportCode = toDestinationFlight.DestinationAirportCode,
                      Duration = toDestinationFlight.Duration,
@@ -128,7 +128,7 @@ namespace TravelService.MultiAgent.Orchestrator
                      AircraftType = toDestinationFlight.AircraftType,
                      Airline = new AirlineDetails
                      {
-                        Id = toDestinationAirline.Id,
+                        Id = toDestinationFlight.AirlineId,
                         Name = toDestinationAirline.Name,
                         Code = toDestinationAirline.Code,
                         City = toDestinationAirline.City,
@@ -148,7 +148,7 @@ namespace TravelService.MultiAgent.Orchestrator
                   PricePaid = booking.FromDestinationTicket.PricePaid,
                   Flight = new FlightDetails
                   {
-                     FlightId = fromDestinationFlight.Id,
+                     FlightId = booking.FromDestinationTicket.FlightId,
                      DepartureAirportCode = fromDestinationFlight.DepartureAirportCode,
                      DestinationAirportCode = fromDestinationFlight.DestinationAirportCode,
                      Duration = fromDestinationFlight.Duration,
@@ -159,7 +159,7 @@ namespace TravelService.MultiAgent.Orchestrator
                      AircraftType = fromDestinationFlight.AircraftType,
                      Airline = new AirlineDetails
                      {
-                        Id = fromDestinationAirline.Id,
+                        Id = fromDestinationFlight.AirlineId,
                         Name = fromDestinationAirline.Name,
                         Code = fromDestinationAirline.Code,
                         City = fromDestinationAirline.City,
@@ -219,13 +219,13 @@ namespace TravelService.MultiAgent.Orchestrator
                   Phone = passenger.Phone
                };
 
-               denormalizedBooking.FromDestinationTicket = new DenormalizedTicket
+               denormalizedBooking.ToDestinationTicket = new DenormalizedTicket
                {
-                  SeatNumber = booking.FromDestinationTicket.SeatNumber,
-                  PricePaid = booking.FromDestinationTicket.PricePaid,
+                  SeatNumber = booking.ToDestinationTicket.SeatNumber,
+                  PricePaid = booking.ToDestinationTicket.PricePaid,
                   Flight = new FlightDetails
                   {
-                     FlightId = flight.Id,
+                     FlightId = booking.ToDestinationTicket.FlightId,
                      DepartureAirportCode = flight.DepartureAirportCode,
                      DestinationAirportCode = flight.DestinationAirportCode,
                      Duration = flight.Duration,
@@ -236,7 +236,7 @@ namespace TravelService.MultiAgent.Orchestrator
                      AircraftType = flight.AircraftType,
                      Airline = new AirlineDetails
                      {
-                        Id = airline.Id,
+                        Id = flight.AirlineId,
                         Name = airline.Name,
                         Code = airline.Code,
                         City = airline.City,
@@ -279,7 +279,7 @@ namespace TravelService.MultiAgent.Orchestrator
                   PricePaid = booking.FromDestinationTicket.PricePaid,
                   Flight = new FlightDetails
                   {
-                     FlightId = flight.Id,
+                     FlightId = booking.FromDestinationTicket.FlightId,
                      DepartureAirportCode = flight.DepartureAirportCode,
                      DestinationAirportCode = flight.DestinationAirportCode,
                      Duration = flight.Duration,
@@ -290,7 +290,7 @@ namespace TravelService.MultiAgent.Orchestrator
                      AircraftType = flight.AircraftType,
                      Airline = new AirlineDetails
                      {
-                        Id = airline.Id,
+                        Id = flight.AirlineId,
                         Name = airline.Name,
                         Code = airline.Code,
                         City = airline.City,

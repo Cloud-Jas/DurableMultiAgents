@@ -31,15 +31,16 @@ namespace WeatherService.Services
          {
             _container = _cosmosClient.GetContainer(databaseId, "Weather");
 
+            var travelStartTime = travelDate.ToString("HH:mm");
+
             var query = new QueryDefinition(
-                @"SELECT * 
+                    @"SELECT * 
                   FROM c 
                   WHERE LOWER(c.LocationName) = LOWER(@locationName) 
-                  AND c.StartDate >= DateTimeAdd('hour', -2, @startDateTime) 
-                  AND c.StartDate <= DateTimeAdd('hour', 2, @endDateTime)")
+                  AND @travelStartTime >= c.StartTime 
+                  AND @travelStartTime <= c.EndTime")
                 .WithParameter("@locationName", city)
-                .WithParameter("@startDateTime", travelDate.ToString("yyyy-MM-ddTHH:mm:ssZ"))
-                .WithParameter("@endDateTime", travelDate.ToString("yyyy-MM-ddTHH:mm:ssZ"));
+                .WithParameter("@travelStartTime", travelStartTime);
 
             var weatherDetails = new List<Weather>();
 
@@ -52,12 +53,40 @@ namespace WeatherService.Services
                }
             }
 
+            if (weatherDetails.Count == 0)
+            {
+               var randomClimate = GenerateRandomWeather(city, travelStartTime);
+               weatherDetails.Add(randomClimate);
+            }
+
             return weatherDetails;
          }
          catch (Exception ex)
          {
             throw new ApplicationException("An error occurred while fetching weather details.", ex);
          }
+      }
+      private Weather GenerateRandomWeather(string city,string travelStartTime)
+      {
+         var random = new Random();
+
+         var weatherConditions = new[] { "Sunny", "Cloudy", "Rainy", "Windy", "Stormy", "Snowy" };
+         var temperatures = new[] { 10, 15, 20, 25, 30, 35, 40 };
+         var humidity = random.Next(30, 80);
+         var windSpeed = random.Next(5, 30);
+
+         var randomWeather = new Weather
+         {
+            LocationName = city,
+            StartTime = travelStartTime,
+            EndTime = travelStartTime,
+            WeatherCondition = weatherConditions[random.Next(weatherConditions.Length)],
+            TemperatureCelsius = temperatures[random.Next(temperatures.Length)],
+            Humidity = humidity,
+            WindSpeedKmh = windSpeed
+         };
+
+         return randomWeather;
       }
    }
 }

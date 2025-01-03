@@ -54,7 +54,7 @@ namespace TravelService.MultiAgent.Orchestrator.Agents.Weather.Plugins
                {
                   foreach (var w in weather)
                   {
-                     response += $"City: \"{w.LocationName}\"  Date: \"{w.StartDate}\"  Temperature: \"{w.TemperatureCelsius}\"  Weather: \"{w.WeatherCondition}\"\n";
+                     response += $"City: \"{w.LocationName}\"  StartTime: \"{w.StartTime}\" EndTime: \"{w.EndTime}\"  Temperature: \"{w.TemperatureCelsius}\"  Weather: \"{w.WeatherCondition}\"\n";
                   }
                }
                else
