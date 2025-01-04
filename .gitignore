@@ -265,3 +265,7 @@ __pycache__/
 .azure
 /scripts/migrationCompleted.flag
 /src/WebApp/TravelService.CustomerUI/appsettings.Development.json
+/src/Services/BookingService/appsettings.Development.json
+/src/Services/FlightService/appsettings.Development.json
+/src/Services/UserService/appsettings.Development.json
+/src/Services/WeatherService/appsettings.Development.json

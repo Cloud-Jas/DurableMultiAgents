@@ -96,7 +96,7 @@
 </div>
 
 @code {
-   #pragma warning disable OPENAI002
+#pragma warning disable OPENAI002
    public enum AssistantType
    {
       Custom,
@@ -144,7 +144,7 @@
    private MicrophoneAudioStream? micStream;
    private CancellationTokenSource? cancellationTokenSource;
    private RealtimeConversationSession realtimeConversationSession;
-   string[] suggestions = ["Can you help me plan a trip from chennai to goa on Sept 10th 2024 for 5 days?", "What you can help me with?", "Can you list my past bookings?"];
+   string[] suggestions = [$"Can you help me plan a trip from chennai to goa on Sept 10th {DateTime.UtcNow.Year} for 5 days?", "What you can help me with?", "Can you list my past bookings?"];
    [Parameter]
    public int BookingId { get; set; }
 
