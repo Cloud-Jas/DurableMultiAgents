@@ -1,8 +1,8 @@
 using Azure.AI.OpenAI;
+using Azure.Identity;
 using Microsoft.FluentUI.AspNetCore.Components;
 using OpenAI.RealtimeConversation;
 using StackExchange.Redis;
-using System.ClientModel;
 using TravelService.CustomerUI.Clients.Backend;
 using TravelService.CustomerUI.Components;
 #pragma warning disable OPENAI002
@@ -11,9 +11,8 @@ RealtimeConversationClient GetConfiguredClient(IConfiguration configuration)
 {
    string? aoaiEndpoint = configuration["AZURE_OPENAI_ENDPOINT"];
    string? aoaiDeployment = configuration["AZURE_OPENAI_DEPLOYMENT"];
-   string? aoaiApiKey = configuration["AZURE_OPENAI_API_KEY"];
 
-   AzureOpenAIClient aoaiClient = new(new Uri(aoaiEndpoint), new ApiKeyCredential(aoaiApiKey));
+   AzureOpenAIClient aoaiClient = new(new Uri(aoaiEndpoint), new DefaultAzureCredential(),new AzureOpenAIClientOptions(AzureOpenAIClientOptions.ServiceVersion.V2024_10_01_Preview));
    return aoaiClient.GetRealtimeConversationClient(aoaiDeployment);
 }
 

@@ -10,8 +10,8 @@
 	  <UserSecretsId>f0cab512-0e1b-4c7a-b826-4e04a0204267</UserSecretsId>
   </PropertyGroup>
 	<ItemGroup>		
-		<PackageReference Include="Azure.AI.OpenAI" Version="2.1.0-beta.1" />
-		<PackageReference Include="Azure.Identity" Version="1.12.0" />
+		<PackageReference Include="Azure.AI.OpenAI" Version="2.1.0-beta.2" />
+		<PackageReference Include="Azure.Identity" Version="1.13.1" />
 		<PackageReference Include="Markdig" Version="0.37.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.8" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="8.0.8" />

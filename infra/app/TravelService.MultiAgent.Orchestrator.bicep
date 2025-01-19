@@ -4,6 +4,7 @@ param tags object
 param identityName string
 param storageAccountName string
 param redisCacheName string
+param openAIDeploymentCapacity int
 param applicationInsightsName string
 @secure()
 param appDefinition object
@@ -38,7 +39,6 @@ param dataActions array = [
 ]
 
 param deployments array = []
-param deploymentCapacity int = 120
 param apimName string
 
 var indexingPolicy = {
@@ -265,7 +265,7 @@ resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01
   }
   sku: deployment.?sku ?? {
     name: 'Standard'
-    capacity: deploymentCapacity
+    capacity: openAIDeploymentCapacity
   }
 }]
 

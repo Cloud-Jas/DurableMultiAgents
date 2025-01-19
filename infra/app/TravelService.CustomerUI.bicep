@@ -120,10 +120,6 @@ resource webApp 'Microsoft.Web/sites@2022-03-01' = {
             value: realtimeDeploymentName
         }
         {
-            name:'AZURE_OPENAI_API_KEY'
-            value: '${openAIService.listKeys().key1}'
-        }
-        {
             name:'AZURE_OPENAI_ENDPOINT'
             value:'https://${openAIService.name}.openai.azure.com/'
         }

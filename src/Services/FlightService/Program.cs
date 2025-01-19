@@ -18,7 +18,14 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<TracingContextCache>();
 
 builder.Services.AddDbContext<FlightServiceDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetValue<string>("DbConnString")));
+    options.UseSqlServer(builder.Configuration.GetValue<string>("DbConnString"), sqlOptions =>
+    {
+       sqlOptions.EnableRetryOnFailure(
+           maxRetryCount: 5,
+           maxRetryDelay: TimeSpan.FromSeconds(30),
+           errorNumbersToAdd: null
+       );
+    }));
 
 builder.Services.AddScoped<IFlightServiceRepository,FlightServiceRepository>();
 #region OpenTelemetry       

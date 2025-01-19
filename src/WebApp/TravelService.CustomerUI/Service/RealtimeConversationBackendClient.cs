@@ -40,7 +40,7 @@ namespace TravelService.CustomerUI.Clients.Backend
                        callId: functionCallId,
                        output: messageResponse);
             await realtimeConversationSession.AddItemAsync(functionOutputItem);
-            await realtimeConversationSession.StartResponseTurnAsync();
+            await realtimeConversationSession.StartResponseAsync();
          }
       }
       public async Task StartConversationAsync(string sessionId, string userId)
@@ -103,7 +103,7 @@ namespace TravelService.CustomerUI.Clients.Backend
                Console.WriteLine($" >>> Listening to microphone input");
                Console.WriteLine($" >>> (Just tell the app you're done to finish)");
                Console.WriteLine();
-               await session.SendAudioAsync(microphoneInput);
+               await session.SendInputAudioAsync(microphoneInput);
             });
          }
          else if (update is ConversationInputSpeechStartedUpdate)
@@ -119,22 +119,18 @@ namespace TravelService.CustomerUI.Clients.Backend
          {
             Console.WriteLine($" >>> USER: {transcriptionFinishedUpdate.Transcript}");           
          }
-         else if (update is ConversationAudioDeltaUpdate audioDeltaUpdate)
+         else if (update is ConversationItemStreamingPartDeltaUpdate audioDeltaUpdate)
          {
-            speakerOutput.EnqueueForPlayback(audioDeltaUpdate.Delta);
+            speakerOutput.EnqueueForPlayback(audioDeltaUpdate.AudioBytes);
          }
-         else if (update is ConversationOutputTranscriptionDeltaUpdate outputTranscriptionDeltaUpdate)
-         {
-            //Console.Write(outputTranscriptionDeltaUpdate.Delta);
-         }
-         else if (update is ConversationItemStartedUpdate itemStartedUpdate)
+         else if (update is ConversationItemStreamingStartedUpdate itemStartedUpdate)
          {
 
             if (itemStartedUpdate.FunctionName == invokeTravelAgentTool.Name)
             {              
             }
          }
-         else if (update is ConversationItemFinishedUpdate itemFinishedUpdate)
+         else if (update is ConversationItemStreamingFinishedUpdate itemFinishedUpdate)
          {
             Console.WriteLine();
             if (itemFinishedUpdate.FunctionName == finishConversationTool.Name)
@@ -152,7 +148,7 @@ namespace TravelService.CustomerUI.Clients.Backend
                        callId: itemFinishedUpdate.FunctionCallId,
                        output: "Keep the user engaged it will take more time to fetch the result from the system, Ask about what his plans or continue the current conversation!");
                   await realtimeConversationSession.AddItemAsync(functionOutputItem);
-                  await realtimeConversationSession.StartResponseTurnAsync();
+                  await realtimeConversationSession.StartResponseAsync();
                   await Task.Delay(10000);
                }
             }
@@ -161,10 +157,10 @@ namespace TravelService.CustomerUI.Clients.Backend
                Console.Write($"    + [{itemFinishedUpdate.MessageRole}]: ");
                foreach (ConversationContentPart contentPart in itemFinishedUpdate.MessageContentParts)
                {
-                  Console.Write(contentPart.AudioTranscriptValue);
+                  Console.Write(contentPart.AudioTranscript);
                   if(itemFinishedUpdate.MessageRole == "assistant")
                   {
-                     userPrompts.Add(contentPart.AudioTranscriptValue);
+                     userPrompts.Add(contentPart.AudioTranscript);
                   }
                }
                Console.WriteLine();
@@ -176,12 +172,12 @@ namespace TravelService.CustomerUI.Clients.Backend
             if (turnFinishedUpdate.CreatedItems.Any(item => item.FunctionName?.Length > 0))
             {
                Console.WriteLine($"  -- Ending client turn for pending tool responses");
-               await session.StartResponseTurnAsync();
+               await session.StartResponseAsync();
             }
          }
          else if (update is ConversationErrorUpdate errorUpdate)
          {
-            Console.WriteLine($" <<< ERROR: {errorUpdate.ErrorMessage}");
+            Console.WriteLine($" <<< ERROR: {errorUpdate.ErrorCode}");
             Console.WriteLine(errorUpdate.GetRawContent().ToString());
          }
       }

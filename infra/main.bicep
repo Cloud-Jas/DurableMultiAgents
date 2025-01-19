@@ -21,15 +21,16 @@ param travelServiceMultiAgentOrchestratorDefinition object
 })
 param openAILocation string
 param realtimeOpenAILocation string
+param openAIDeploymentCapacity int = 120
 
 param openAISku string = 'S0'
 
 param chatGptDeploymentName string = 'gpt4'
 param chatGptModelName string = 'gpt-4o'
 param chatGptModelVersion string = '2024-05-13'
-param embeddingDeploymentName string = 'embedding'
+param embeddingDeploymentName string = 'embedding-small'
 param embeddingDeploymentCapacity int = 120
-param embeddingModelName string = 'text-embedding-ada-002'
+param embeddingModelName string = 'text-embedding-3-small'
 param realtimeDeploymentName string = 'realtime'
 param realtimeModelName string = 'gpt-4o-realtime-preview'
 param realtimeModelVersion string = '2024-10-01'
@@ -86,6 +87,7 @@ module travelServiceMultiAgentOrchestrator './app/TravelService.MultiAgent.Orche
     appDefinition: travelServiceMultiAgentOrchestratorDefinition    
     openAiLocation: openAILocation
     openAiSkuName: openAISku
+    openAIDeploymentCapacity: openAIDeploymentCapacity
     deployments: [
       {
         name: chatGptDeploymentName

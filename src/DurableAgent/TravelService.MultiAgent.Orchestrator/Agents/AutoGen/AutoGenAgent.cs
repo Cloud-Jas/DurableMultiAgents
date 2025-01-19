@@ -109,30 +109,6 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
             Kernel = kernel
          };
 
-
-         //SemanticKernelChatCompletionAgent agent = new SemanticKernelChatCompletionAgent(new ChatCompletionAgent
-         //{
-         //   Arguments = new KernelArguments
-         //       {
-         //           { "context", requestData.UserQuery },
-         //           { "userId",requestData.UserId },
-         //           { "history", requestData.ChatHistory },
-         //           { "userName", requestData.UserName},
-         //           { "email", requestData.UserMailId }
-         //       },
-         //   Name = agentName + "Agent",
-         //   Instructions = prompt,
-         //   Kernel = kernel
-         //});
-
-         //foreach (var plugin in kernel.Plugins)
-         //{
-         //   agent.RegisterMiddleware(new KernelPluginMiddleware(kernel, plugin));
-         //}
-
-         //agent.RegisterMiddleware(new SemanticKernelChatMessageContentConnector());
-         //agent.RegisterMiddleware(new FunctionCallMiddleware());
-         //agent.RegisterPrintMessage();        
          return agent;
       }
 
@@ -215,38 +191,6 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
                Console.WriteLine();
                intermediateResponse = content.Content;
             }
-
-            //var flightAgent = await GetChatCompletionAgentAsync(requestData, "Flight", _kernel);
-            //var weatherAgent = await GetChatCompletionAgentAsync(requestData, "Weather", _kernel);
-            //var bookingAgent = await GetChatCompletionAgentAsync(requestData, "Booking", _kernel);
-
-            //var flightToWeatherTransition = Transition.Create(flightAgent, weatherAgent);
-            //var weatherToBookingTransition = Transition.Create(weatherAgent, bookingAgent);            
-
-            //GroupChat chat = new GroupChat(members: [flightAgent, weatherAgent, bookingAgent],
-            //   admin: await GetChatCompletionAgentAsync(requestData, "Manager", _kernel), 
-            //   workflow: new Graph([flightToWeatherTransition, weatherToBookingTransition]));
-
-            ////flightAgent.SendIntroduction("FlightAgent is responsible for getting all flight options for the user query.", chat);
-            ////weatherAgent.SendIntroduction("WeatherAgent is responsible for getting the weather details of all possible locations.", chat);
-            ////bookingAgent.SendIntroduction("BookingAgent is responsible for booking the flight based on best possible flight options and send confirmation mail.", chat);
-
-            //var initialMessage = await flightAgent.SendAsync();                       
-
-            //var intermediateResponse = string.Empty;
-            //await foreach (var message in chat.SendAsync([initialMessage], maxRound: 20))
-            //{
-            //   if(message is TextMessage textMessage)
-            //   {
-            //      intermediateResponse += textMessage.Content;
-            //   }               
-            //   if (message.From == "BookingAgent" && message.FormatMessage().Contains("confirmation", StringComparison.InvariantCultureIgnoreCase))
-            //   {
-            //      Console.WriteLine("Thanks!");
-            //      break;
-            //   }
-
-            //}
 
             return intermediateResponse;
          }
