@@ -152,6 +152,9 @@ module travelServiceCustomerUI './app/TravelService.CustomerUI.bicep' = {
 
 module containerAppServices './app/ContainerAppServices.bicep' = {
   name: 'ContainerAppService'
+  dependsOn: [
+    travelServiceMultiAgentOrchestrator
+  ]
   params: {
     name: '${abbrs.appContainerApps}${resourceToken}'
     location: location
