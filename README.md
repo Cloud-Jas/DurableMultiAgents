@@ -22,6 +22,19 @@ Durable Multi Agents is an attempt to make use of Azure Durable Functions with S
 
 ```quote
 Disclaimer: Realtime Agent only works in local environment, will be updated soon to work in live URL
+Update config.json under .azure folder to point swedencentral for realtimeapilocation as it is not widely available
+
+```
+
+
+```json
+"infra": 
+  {    
+    "parameters": 
+      {      
+        "openAILocation": "westus",      "realtimeOpenAILocation": "swedencentral"
+      }  
+  }
 ```
 
 </b>
