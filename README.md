@@ -29,11 +29,12 @@ Update config.json under .azure folder to point swedencentral for realtimeapiloc
 
 ```json
 "infra": 
-  {    
-    "parameters": 
-      {      
-        "openAILocation": "westus",      "realtimeOpenAILocation": "swedencentral"
-      }  
+  {
+    "parameters":
+      {
+        "openAILocation": "westus",
+        "realtimeOpenAILocation": "swedencentral"
+      }
   }
 ```
 
