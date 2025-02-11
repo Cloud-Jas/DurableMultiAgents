@@ -22,14 +22,14 @@ namespace TravelService.MultiAgent.Orchestrator
       private readonly ILogger _logger;
       private readonly string databaseId;
       private readonly CosmosClient client;
-      private readonly AzureOpenAITextEmbeddingGenerationService _azureOpenAITextEmbeddingGenerationService;
+      private readonly ITextEmbeddingGenerationService _azureOpenAITextEmbeddingGenerationService;
       private readonly string FabricClientId;
       private readonly IFabricGraphQLService _fabricGraphQLService;
       private readonly IUserServiceClient userServiceClient;
       private readonly IFlightServiceClient flightServiceClient;
 
       public FxBookingChangeFeed(ILoggerFactory loggerFactory, IConfiguration configuration
-         , CosmosClient cosmosClient, AzureOpenAITextEmbeddingGenerationService azureOpenAITextEmbeddingGenerationService
+         , CosmosClient cosmosClient, ITextEmbeddingGenerationService azureOpenAITextEmbeddingGenerationService
          , IFabricGraphQLService fabricGraphQLService, IUserServiceClient userServiceClient, IFlightServiceClient flightServiceClient)
       {
          _logger = loggerFactory.CreateLogger<FxBookingChangeFeed>();

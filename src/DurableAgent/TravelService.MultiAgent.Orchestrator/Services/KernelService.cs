@@ -10,9 +10,9 @@ namespace TravelService.MultiAgent.Orchestrator.Services
 {
    public class KernelService : IKernelService
    {
-      private readonly AzureOpenAIChatCompletionService _chatCompletionService;
+      private readonly IChatCompletionService _chatCompletionService;
 
-      public KernelService(AzureOpenAIChatCompletionService chatCompletionService)
+      public KernelService(IChatCompletionService chatCompletionService)
       {
          _chatCompletionService = chatCompletionService;
       }

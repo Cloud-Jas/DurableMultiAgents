@@ -25,15 +25,17 @@ using TravelService.MultiAgent.Orchestrator.Middlewares;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Polly;
 using Polly.Extensions.Http;
+using Microsoft.SemanticKernel.Embeddings;
 
 #pragma warning disable SKEXP0010
+#pragma warning disable SKEXP0001
 
 var host = new HostBuilder()
      .ConfigureFunctionsWebApplication(applicationBuilder =>
      {
         applicationBuilder.UseFunctionContextAccessor();
      })
-    .ConfigureServices((context,services) =>
+    .ConfigureServices((context, services) =>
     {
        services.AddApplicationInsightsTelemetryWorkerService();
        services.ConfigureFunctionsApplicationInsights();
@@ -90,6 +92,12 @@ var host = new HostBuilder()
        string openaiChatCompletionDeploymentName = Environment.GetEnvironmentVariable("OpenAIChatCompletionDeploymentName");
        string openaiTextEmbeddingGenerationDeploymentName = Environment.GetEnvironmentVariable("OpenAITextEmbeddingGenerationDeploymentName");
        var userAssignedIdentityClientId = Environment.GetEnvironmentVariable("UserAssignedIdentity");
+       string redisConnectionString = Environment.GetEnvironmentVariable("RedisConnectionString");
+
+       if (string.IsNullOrEmpty(cosmosdbAccountEndpoint) || string.IsNullOrEmpty(openaiEndpoint) || string.IsNullOrEmpty(openaiChatCompletionDeploymentName) || string.IsNullOrEmpty(openaiTextEmbeddingGenerationDeploymentName) || string.IsNullOrEmpty(redisConnectionString))
+       {
+          throw new Exception("Missing required environment variables");
+       }
 
        var credentialOptions = new DefaultAzureCredentialOptions
        {
@@ -109,23 +117,15 @@ var host = new HostBuilder()
           return new CosmosClient(cosmosdbAccountEndpoint, new DefaultAzureCredential(credentialOptions), options);
        });
 
-       services.AddSingleton<AzureOpenAIChatCompletionService>(provider =>
-       {
-          return new AzureOpenAIChatCompletionService(
-               deploymentName: openaiChatCompletionDeploymentName,
-               credentials: new DefaultAzureCredential(credentialOptions),
-               endpoint: openaiEndpoint
-           );
-       });
        services.AddSingleton<IChatCompletionService, AzureOpenAIChatCompletionService>(pprovider =>
        {
           return new AzureOpenAIChatCompletionService(
-               deploymentName: openaiChatCompletionDeploymentName,
+               deploymentName: openaiChatCompletionDeploymentName!,
                credentials: new DefaultAzureCredential(credentialOptions),
                endpoint: openaiEndpoint
            );
        });
-       services.AddSingleton<AzureOpenAITextEmbeddingGenerationService>(provider =>
+       services.AddSingleton<ITextEmbeddingGenerationService, AzureOpenAITextEmbeddingGenerationService>(provider =>
        {
           return new AzureOpenAITextEmbeddingGenerationService(deploymentName: openaiTextEmbeddingGenerationDeploymentName,
                endpoint: openaiEndpoint,
@@ -134,11 +134,11 @@ var host = new HostBuilder()
 
        services.AddSingleton<IConnectionMultiplexer>(sp =>
        {
-          var redisConfiguration = ConfigurationOptions.Parse(Environment.GetEnvironmentVariable("RedisConnectionString"), true);
+          var redisConfiguration = ConfigurationOptions.Parse(redisConnectionString, true);
           return ConnectionMultiplexer.Connect(redisConfiguration);
        });
 
-       services.AddSingleton<SendGridClient>(provider =>
+       services.AddSingleton<ISendGridClient,SendGridClient>(provider =>
         {
            return new SendGridClient(Environment.GetEnvironmentVariable("SendGridApiKey"));
         });

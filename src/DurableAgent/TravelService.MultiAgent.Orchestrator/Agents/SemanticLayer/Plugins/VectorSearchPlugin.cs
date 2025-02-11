@@ -52,7 +52,7 @@ namespace TravelService.MultiAgent.Orchestrator.Agents.SemanticLayer.Plugins
             {
                var cosmosService = _serviceProvider.GetRequiredService<ICosmosClientService>();
 
-               var embeddingService = _serviceProvider.GetRequiredService<AzureOpenAITextEmbeddingGenerationService>();
+               var embeddingService = _serviceProvider.GetRequiredService<ITextEmbeddingGenerationService>();
 
                var embeddingQuery = await embeddingService.GenerateEmbeddingAsync(prompt);
 
