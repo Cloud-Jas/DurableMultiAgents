@@ -42,11 +42,28 @@ var host = new HostBuilder()
        services.AddLogging();
        services.AddFunctionContextAccessor();
 
+       #region Environment Variables
+       var cosmosdbAccountEndpoint = Environment.GetEnvironmentVariable("CosmosDBAccountEndpoint");
+       var openaiEndpoint = Environment.GetEnvironmentVariable("OpenAIEndpoint");
+       var openaiChatCompletionDeploymentName = Environment.GetEnvironmentVariable("OpenAIChatCompletionDeploymentName");
+       var openaiTextEmbeddingGenerationDeploymentName = Environment.GetEnvironmentVariable("OpenAITextEmbeddingGenerationDeploymentName");
+       var userAssignedIdentityClientId = Environment.GetEnvironmentVariable("UserAssignedIdentity");
+       var redisConnectionString = Environment.GetEnvironmentVariable("RedisConnectionString");
+       var appInsightsConnectionString = Environment.GetEnvironmentVariable("APPINSIGHTS_CONNECTION_STRING");
+
+       if (string.IsNullOrEmpty(cosmosdbAccountEndpoint) || string.IsNullOrEmpty(openaiEndpoint) 
+       || string.IsNullOrEmpty(openaiChatCompletionDeploymentName) || string.IsNullOrEmpty(openaiTextEmbeddingGenerationDeploymentName) 
+       || string.IsNullOrEmpty(redisConnectionString) || string.IsNullOrEmpty(appInsightsConnectionString))
+       {
+          throw new Exception("Missing required environment variables");
+       }
+       #endregion
+
        #region OpenTelemetry       
        var openTelemetryResourceBuilder = ResourceBuilder.CreateDefault().AddService(serviceName: "TravelService", serviceVersion: "1.0.0");
        var openTelemetryTracerProvider = Sdk.CreateTracerProviderBuilder()
                .AddOtlpExporter()
-               .AddAzureMonitorTraceExporter(c => c.ConnectionString = Environment.GetEnvironmentVariable("APPINSIGHTS_CONNECTION_STRING"))
+               .AddAzureMonitorTraceExporter(c => c.ConnectionString = appInsightsConnectionString)
                .AddSource("TravelService")
                .SetSampler(new AlwaysOnSampler())
                .SetResourceBuilder(openTelemetryResourceBuilder)
@@ -86,18 +103,7 @@ var host = new HostBuilder()
        });
        #endregion
 
-
-       string cosmosdbAccountEndpoint = Environment.GetEnvironmentVariable("CosmosDBAccountEndpoint");
-       string openaiEndpoint = Environment.GetEnvironmentVariable("OpenAIEndpoint");
-       string openaiChatCompletionDeploymentName = Environment.GetEnvironmentVariable("OpenAIChatCompletionDeploymentName");
-       string openaiTextEmbeddingGenerationDeploymentName = Environment.GetEnvironmentVariable("OpenAITextEmbeddingGenerationDeploymentName");
-       var userAssignedIdentityClientId = Environment.GetEnvironmentVariable("UserAssignedIdentity");
-       string redisConnectionString = Environment.GetEnvironmentVariable("RedisConnectionString");
-
-       if (string.IsNullOrEmpty(cosmosdbAccountEndpoint) || string.IsNullOrEmpty(openaiEndpoint) || string.IsNullOrEmpty(openaiChatCompletionDeploymentName) || string.IsNullOrEmpty(openaiTextEmbeddingGenerationDeploymentName) || string.IsNullOrEmpty(redisConnectionString))
-       {
-          throw new Exception("Missing required environment variables");
-       }
+       #region CosmosDB
 
        var credentialOptions = new DefaultAzureCredentialOptions
        {
@@ -116,7 +122,9 @@ var host = new HostBuilder()
 
           return new CosmosClient(cosmosdbAccountEndpoint, new DefaultAzureCredential(credentialOptions), options);
        });
+       #endregion
 
+       #region OpenAI services
        services.AddSingleton<IChatCompletionService, AzureOpenAIChatCompletionService>(pprovider =>
        {
           return new AzureOpenAIChatCompletionService(
@@ -131,12 +139,15 @@ var host = new HostBuilder()
                endpoint: openaiEndpoint,
                credential: new DefaultAzureCredential(credentialOptions));
        });
+       #endregion
 
+       #region Redis Cache
        services.AddSingleton<IConnectionMultiplexer>(sp =>
        {
           var redisConfiguration = ConfigurationOptions.Parse(redisConnectionString, true);
           return ConnectionMultiplexer.Connect(redisConfiguration);
        });
+       #endregion
 
        services.AddSingleton<ISendGridClient,SendGridClient>(provider =>
         {
@@ -155,6 +166,8 @@ var host = new HostBuilder()
        services.AddScoped<TracingContextCache>();
        services.AddTransient<HttpInterceptorTracingHandler>();
        services.AddHttpContextAccessor();
+
+       #region Typed clients for microservices and external services
        services.AddHttpClient<IPostmarkServiceClient, PostmarkServiceClient>(client =>
        {
           client.BaseAddress = new Uri("https://api.postmarkapp.com");
@@ -195,13 +208,7 @@ var host = new HostBuilder()
         : Environment.GetEnvironmentVariable("ApimUrl") + "/bookingservice";
           client.BaseAddress = new Uri(apimUrl + "/api/");
        });
-
-       static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-       {
-          return HttpPolicyExtensions
-              .HandleTransientHttpError()
-              .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-       }
+       #endregion
 
        services.AddScoped<IPromptyService, PromptyService>();
        services.AddScoped<IKernelService, KernelService>();
