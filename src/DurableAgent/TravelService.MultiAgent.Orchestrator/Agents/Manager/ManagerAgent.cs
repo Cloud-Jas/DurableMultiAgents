@@ -4,6 +4,7 @@ using Microsoft.Identity.Client;
 using Microsoft.SemanticKernel;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using System.Text.RegularExpressions;
 using TravelService.MultiAgent.Orchestrator.Contracts;
 using TravelService.MultiAgent.Orchestrator.Interfaces;
 using TravelService.MultiAgent.Orchestrator.Models;
@@ -112,8 +113,20 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
 
             try
             {
-               var orchestrator = JsonConvert.DeserializeObject<Contracts.Orchestrator>(result.Content!);
-               return orchestrator!.OrchestratorName;
+               var jsonMatch = Regex.Match(result.Content!.Replace("\n", "").Replace("\t", "").Trim(), @"\{.*?\}");
+
+               if (jsonMatch.Success)
+               {
+                  var jsonResponse = jsonMatch.Value;
+                  var orchestratorData = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
+
+                  if (orchestratorData != null && orchestratorData.TryGetValue("OrchestratorName", out string? parsedOrchestrator))
+                  {
+                     return parsedOrchestrator;
+                  }
+               }
+
+               return result.Content!;
             }
             catch (Exception ex)
             {
@@ -174,21 +187,24 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
 
             try
             {
-               var agents = JsonConvert.DeserializeObject<Agent>(result.Content!);
-               return agents!.AgentName;
+               var jsonMatch = Regex.Match(result.Content!.Replace("\n", "").Replace("\t", "").Trim(), @"\{.*?\}");
+
+               if (jsonMatch.Success)
+               {
+                  var jsonResponse = jsonMatch.Value;
+                  var agents = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
+
+                  if (agents != null && agents.TryGetValue("AgentName", out string? parsedAgent))
+                  {
+                     return parsedAgent;
+                  }
+               }
+
+               return result.Content!;
             }
             catch (Exception ex)
-            { // Retry once if there is error in deserializing the result
-               try
-               {
-                  var Retryresult = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
-                  var agents = JsonConvert.DeserializeObject<Agent>(Retryresult.Content!);
-                  return agents!.AgentName;
-               }
-               catch (Exception ex1)
-               {
-                  return "NotFound";
-               }
+            {
+               return "NotFound";
             }
          };
 
@@ -218,21 +234,24 @@ namespace TravelService.MultiAgent.Orchestrator.Agents
 
             try
             {
-               var agents = JsonConvert.DeserializeObject<Agent>(result.Content!);
-               return agents!.AgentName;
+               var jsonMatch = Regex.Match(result.Content!.Replace("\n", "").Replace("\t", "").Trim(), @"\{.*?\}");
+
+               if (jsonMatch.Success)
+               {
+                  var jsonResponse = jsonMatch.Value;
+                  var agents = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResponse);
+
+                  if (agents != null && agents.TryGetValue("AgentName", out string? parsedAgent))
+                  {
+                     return parsedAgent;
+                  }
+               }
+
+               return result.Content!;
             }
             catch (Exception ex)
-            { // Retry once if there is error in deserializing the result
-               try
-               {
-                  var Retryresult = await _kernelService.GetChatMessageContentAsync(_kernel, prompt);
-                  var agents = JsonConvert.DeserializeObject<Agent>(Retryresult.Content!);
-                  return agents!.AgentName;
-               }
-               catch (Exception ex1)
-               {
-                  return "NotFound";
-               }
+            {
+               return "NotFound";
             }
          };
 
