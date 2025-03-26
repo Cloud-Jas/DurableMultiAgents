@@ -49,7 +49,7 @@ var host = new HostBuilder()
        var openaiTextEmbeddingGenerationDeploymentName = Environment.GetEnvironmentVariable("OpenAITextEmbeddingGenerationDeploymentName");
        var userAssignedIdentityClientId = Environment.GetEnvironmentVariable("UserAssignedIdentity");
        var redisConnectionString = Environment.GetEnvironmentVariable("RedisConnectionString");
-       var appInsightsConnectionString = Environment.GetEnvironmentVariable("APPINSIGHTS_CONNECTION_STRING");
+       var appInsightsConnectionString = Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
 
        if (string.IsNullOrEmpty(cosmosdbAccountEndpoint) || string.IsNullOrEmpty(openaiEndpoint) 
        || string.IsNullOrEmpty(openaiChatCompletionDeploymentName) || string.IsNullOrEmpty(openaiTextEmbeddingGenerationDeploymentName) 
