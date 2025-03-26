@@ -113,7 +113,7 @@ Add the `local.settings.json` in the Azure Durable Function project, with the be
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "APPINSIGHTS_INSTRUMENTATIONKEY": "Your_InstrumentationKey_Here",
-    "APPINSIGHTS_CONNECTION_STRING": "Your_ConnectionString_Here",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "Your_ConnectionString_Here",
     "CosmosDBAccountEndpoint": "Your_CosmosDBAccountEndpoint_Here",
     "SubscriptionId": "Your_SubscriptionId_Here",
     "ResourceGroup": "Your_ResourceGroup_Here",
@@ -133,7 +133,7 @@ Add the `local.settings.json` in the Azure Durable Function project, with the be
 }
 ```
 
-- To get the `APPINSIGHTS_INSTRUMENTATIONKEY` and `APPINSIGHTS_CONNECTION_STRING` you need to create an Application Insights in Azure and get the key from there
+- To get the `APPINSIGHTS_INSTRUMENTATIONKEY` and `APPLICATIONINSIGHTS_CONNECTION_STRING` you need to create an Application Insights in Azure and get the key from there
 - To get the `CosmosDBAccountEndpoint` you need to create an Azure Cosmos DB account and get the endpoint from there
 - To get the `SubscriptionId`, `ResourceGroup`, `DatabaseAccount`, `DatabaseId`, `TenantId`, you need to get the details from Azure Portal
 - To get the `PostmarkServerToken` and `FromMailAddress` you need to create an account in Postmark and get the token from there. FromMailAddress should be based on the domain you have registered in Postmark

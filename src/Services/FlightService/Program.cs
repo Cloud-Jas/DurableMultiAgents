@@ -32,7 +32,7 @@ builder.Services.AddScoped<IFlightServiceRepository,FlightServiceRepository>();
 var openTelemetryResourceBuilder = ResourceBuilder.CreateDefault().AddService(serviceName: "FlightService", serviceVersion: "1.0.0");
 var openTelemetryTracerProvider = Sdk.CreateTracerProviderBuilder()
         .AddOtlpExporter()
-        .AddAzureMonitorTraceExporter(c => c.ConnectionString = builder.Configuration.GetValue<string>("APPINSIGHTS_CONNECTION_STRING"))
+        .AddAzureMonitorTraceExporter(c => c.ConnectionString = builder.Configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING"))
         .AddSource("FlightService")
         .SetSampler(new AlwaysOnSampler())
         .SetResourceBuilder(openTelemetryResourceBuilder)
@@ -47,7 +47,7 @@ builder.Services.Configure<OpenTelemetryLoggerOptions>((openTelemetryLoggerOptio
    openTelemetryLoggerOptions.SetResourceBuilder(openTelemetryResourceBuilder);
    openTelemetryLoggerOptions.IncludeFormattedMessage = true;
    openTelemetryLoggerOptions.AddConsoleExporter();
-   openTelemetryLoggerOptions.AddAzureMonitorLogExporter(c => c.ConnectionString = builder.Configuration.GetValue<string>("APPINSIGHTS_CONNECTION_STRING"));
+   openTelemetryLoggerOptions.AddAzureMonitorLogExporter(c => c.ConnectionString = builder.Configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING"));
 }
 );
 #endregion
